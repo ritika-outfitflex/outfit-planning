@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search } from 'lucide-react';
 import ClothingItem, { ClothingItemProps } from '@/components/Wardrobe/ClothingItem';
 import { Input } from '@/components/ui/input';
+import { useNavigate } from 'react-router-dom';
 
 // Demo data
 const DEMO_ITEMS: ClothingItemProps[] = [
@@ -56,6 +57,7 @@ const categories = ['All', 'Tops', 'Bottoms', 'Dresses', 'Shoes', 'Accessories']
 
 const WardrobePage = () => {
   const [activeCategory, setActiveCategory] = useState('All');
+  const navigate = useNavigate();
   
   const filteredItems = activeCategory === 'All' 
     ? DEMO_ITEMS 
@@ -92,7 +94,9 @@ const WardrobePage = () => {
           <TabsContent value={activeCategory} className="mt-4">
             <div className="grid grid-cols-2 gap-4 px-4">
               {filteredItems.map(item => (
-                <ClothingItem key={item.id} {...item} />
+                <div key={item.id} onClick={() => navigate(`/wardrobe/item/${item.id}`)}>
+                  <ClothingItem {...item} />
+                </div>
               ))}
             </div>
           </TabsContent>
@@ -100,7 +104,7 @@ const WardrobePage = () => {
       </div>
 
       <div className="flex justify-center pt-2">
-        <Button>+ Add New Item</Button>
+        <Button onClick={() => navigate('/wardrobe/add')}>+ Add New Item</Button>
       </div>
     </div>
   );

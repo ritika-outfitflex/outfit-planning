@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import OutfitCard, { OutfitProps } from '@/components/Outfits/OutfitCard';
+import { useNavigate } from 'react-router-dom';
 
 const DEMO_OUTFITS: OutfitProps[] = [
   {
@@ -48,6 +49,8 @@ const DEMO_OUTFITS: OutfitProps[] = [
 ];
 
 const OutfitsPage = () => {
+  const navigate = useNavigate();
+  
   return (
     <div className="space-y-4 pb-6">
       <div className="px-4 pt-6">
@@ -63,7 +66,9 @@ const OutfitsPage = () => {
           <TabsContent value="all" className="mt-4 space-y-4 px-0">
             <div className="grid gap-4 px-4">
               {DEMO_OUTFITS.map(outfit => (
-                <OutfitCard key={outfit.id} {...outfit} />
+                <div key={outfit.id} onClick={() => navigate(`/outfits/detail/${outfit.id}`)}>
+                  <OutfitCard {...outfit} />
+                </div>
               ))}
             </div>
           </TabsContent>
@@ -71,7 +76,9 @@ const OutfitsPage = () => {
           <TabsContent value="saved" className="mt-4 space-y-4 px-0">
             <div className="grid gap-4 px-4">
               {DEMO_OUTFITS.filter(outfit => outfit.saved).map(outfit => (
-                <OutfitCard key={outfit.id} {...outfit} />
+                <div key={outfit.id} onClick={() => navigate(`/outfits/detail/${outfit.id}`)}>
+                  <OutfitCard {...outfit} />
+                </div>
               ))}
             </div>
           </TabsContent>
@@ -79,7 +86,9 @@ const OutfitsPage = () => {
           <TabsContent value="recent" className="mt-4 space-y-4 px-0">
             <div className="grid gap-4 px-4">
               {DEMO_OUTFITS.slice(0, 2).map(outfit => (
-                <OutfitCard key={outfit.id} {...outfit} />
+                <div key={outfit.id} onClick={() => navigate(`/outfits/detail/${outfit.id}`)}>
+                  <OutfitCard {...outfit} />
+                </div>
               ))}
             </div>
           </TabsContent>
@@ -87,7 +96,7 @@ const OutfitsPage = () => {
       </div>
 
       <div className="flex justify-center pt-2">
-        <Button>+ Create New Outfit</Button>
+        <Button onClick={() => navigate('/outfits/create')}>+ Create New Outfit</Button>
       </div>
     </div>
   );

@@ -10,6 +10,10 @@ import Wardrobe from "./pages/Wardrobe";
 import Outfits from "./pages/Outfits";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import AddItem from "./pages/AddItem";
+import ItemDetail from "./pages/ItemDetail";
+import CreateOutfit from "./pages/CreateOutfit";
+import OutfitDetail from "./pages/OutfitDetail";
 
 const queryClient = new QueryClient();
 
@@ -23,7 +27,11 @@ const App = () => (
           <Route path="/" element={<MobileLayout />}>
             <Route index element={<Index />} />
             <Route path="wardrobe" element={<Wardrobe />} />
+            <Route path="wardrobe/add" element={<AddItem />} />
+            <Route path="wardrobe/item/:id" element={<ItemDetail />} />
             <Route path="outfits" element={<Outfits />} />
+            <Route path="outfits/create" element={<CreateOutfit />} />
+            <Route path="outfits/detail/:id" element={<OutfitDetail />} />
             <Route path="profile" element={<Profile />} />
           </Route>
           <Route path="*" element={<NotFound />} />
