@@ -2,40 +2,30 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import OutfitCard, { OutfitProps } from '@/components/Outfits/OutfitCard';
 import { useNavigate } from 'react-router-dom';
-
-const DEMO_OUTFITS: OutfitProps[] = [
-  {
-    id: '1',
-    name: 'Summer Casual',
-    items: [
-      { id: '101', image: '/placeholder.svg' },
-      { id: '102', image: '/placeholder.svg' },
-      { id: '103', image: '/placeholder.svg' },
-      { id: '104', image: '/placeholder.svg' },
-    ],
-    saved: true
-  },
-  {
-    id: '2',
-    name: 'Office Look',
-    items: [
-      { id: '201', image: '/placeholder.svg' },
-      { id: '202', image: '/placeholder.svg' },
-      { id: '203', image: '/placeholder.svg' },
-    ]
-  }
-];
+import { useAuth } from '@/contexts/AuthContext';
+import { useClothingItems } from '@/hooks/useClothingItems';
+import AIFashionAssistant from '@/components/AIFashionAssistant';
+import { Sparkles, Shirt, Eye } from 'lucide-react';
 
 const IndexPage = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { items } = useClothingItems();
+
+  const recentItems = items.slice(0, 6);
+  const totalOutfits = Math.floor(items.length / 3); // Mock calculation
 
   return (
     <div className="space-y-6 pb-6">
       {/* Header */}
       <div className="flex justify-between items-center px-4 pt-6">
-        <h1 className="text-2xl font-bold">OutfitFlex</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Welcome back!</h1>
+          <p className="text-muted-foreground text-sm">
+            {user?.email}
+          </p>
+        </div>
         <Button 
           variant="outline" 
           size="sm"
@@ -43,6 +33,36 @@ const IndexPage = () => {
         >
           + Add Item
         </Button>
+      </div>
+      
+      {/* Stats Cards */}
+      <div className="grid grid-cols-3 gap-3 px-4">
+        <Card>
+          <CardContent className="p-3 text-center">
+            <Shirt className="h-6 w-6 mx-auto mb-1 text-outfit-primary" />
+            <h4 className="text-lg font-semibold">{items.length}</h4>
+            <p className="text-xs text-muted-foreground">Items</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3 text-center">
+            <Eye className="h-6 w-6 mx-auto mb-1 text-outfit-primary" />
+            <h4 className="text-lg font-semibold">{totalOutfits}</h4>
+            <p className="text-xs text-muted-foreground">Outfits</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3 text-center">
+            <Sparkles className="h-6 w-6 mx-auto mb-1 text-outfit-primary" />
+            <h4 className="text-lg font-semibold">AI</h4>
+            <p className="text-xs text-muted-foreground">Ready</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* AI Fashion Assistant */}
+      <div className="px-4">
+        <AIFashionAssistant />
       </div>
       
       {/* Quick Actions */}
@@ -88,27 +108,43 @@ const IndexPage = () => {
         </div>
       </div>
       
-      {/* Recent Outfits */}
-      <div>
-        <div className="flex justify-between items-center px-4 mb-2">
-          <h2 className="font-medium">Recent Outfits</h2>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-xs"
-            onClick={() => navigate('/outfits')}
-          >
-            See All
-          </Button>
+      {/* Recent Items */}
+      {recentItems.length > 0 && (
+        <div className="px-4">
+          <div className="flex justify-between items-center mb-2">
+            <h2 className="font-medium">Recent Items</h2>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-xs"
+              onClick={() => navigate('/wardrobe')}
+            >
+              See All
+            </Button>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {recentItems.map((item) => (
+              <div 
+                key={item.id}
+                className="aspect-square bg-muted rounded-md overflow-hidden cursor-pointer"
+                onClick={() => navigate(`/wardrobe/item/${item.id}`)}
+              >
+                {item.image_url ? (
+                  <img
+                    src={item.image_url}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Shirt className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="px-4 grid gap-4">
-          {DEMO_OUTFITS.map(outfit => (
-            <div key={outfit.id} onClick={() => navigate(`/outfits/detail/${outfit.id}`)}>
-              <OutfitCard {...outfit} />
-            </div>
-          ))}
-        </div>
-      </div>
+      )}
     </div>
   );
 };

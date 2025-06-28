@@ -3,65 +3,41 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search } from 'lucide-react';
-import ClothingItem, { ClothingItemProps } from '@/components/Wardrobe/ClothingItem';
+import ClothingItem from '@/components/Wardrobe/ClothingItem';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
-
-// Demo data
-const DEMO_ITEMS: ClothingItemProps[] = [
-  {
-    id: '1',
-    name: 'White T-shirt',
-    category: 'Tops',
-    color: '#FFFFFF',
-    image: '/placeholder.svg'
-  },
-  {
-    id: '2',
-    name: 'Blue Jeans',
-    category: 'Bottoms',
-    color: '#3B5998',
-    image: '/placeholder.svg'
-  },
-  {
-    id: '3',
-    name: 'Black Dress',
-    category: 'Dresses',
-    color: '#000000',
-    image: '/placeholder.svg'
-  },
-  {
-    id: '4',
-    name: 'Sneakers',
-    category: 'Shoes',
-    color: '#FF5733',
-    image: '/placeholder.svg'
-  },
-  {
-    id: '5',
-    name: 'Silver Necklace',
-    category: 'Accessories',
-    color: '#C0C0C0',
-    image: '/placeholder.svg'
-  },
-  {
-    id: '6',
-    name: 'Denim Jacket',
-    category: 'Tops',
-    color: '#6699CC',
-    image: '/placeholder.svg'
-  }
-];
+import { useClothingItems } from '@/hooks/useClothingItems';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const categories = ['All', 'Tops', 'Bottoms', 'Dresses', 'Shoes', 'Accessories'];
 
 const WardrobePage = () => {
   const [activeCategory, setActiveCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+  const { items, loading } = useClothingItems();
   
-  const filteredItems = activeCategory === 'All' 
-    ? DEMO_ITEMS 
-    : DEMO_ITEMS.filter(item => item.category === activeCategory);
+  const filteredItems = items.filter(item => {
+    const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         item.color.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
+  if (loading) {
+    return (
+      <div className="space-y-4 pb-6">
+        <div className="px-4 pt-6">
+          <h1 className="text-2xl font-bold mb-4">Your Wardrobe</h1>
+          <div className="grid grid-cols-2 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="aspect-square rounded-lg" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 pb-6">
@@ -73,6 +49,8 @@ const WardrobePage = () => {
           <Input 
             placeholder="Search items..." 
             className="pl-9"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
@@ -92,13 +70,30 @@ const WardrobePage = () => {
           </div>
 
           <TabsContent value={activeCategory} className="mt-4">
-            <div className="grid grid-cols-2 gap-4 px-4">
-              {filteredItems.map(item => (
-                <div key={item.id} onClick={() => navigate(`/wardrobe/item/${item.id}`)}>
-                  <ClothingItem {...item} />
-                </div>
-              ))}
-            </div>
+            {filteredItems.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">
+                  {items.length === 0 
+                    ? "No items in your wardrobe yet. Add your first item!"
+                    : "No items match your search criteria."
+                  }
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4 px-4">
+                {filteredItems.map(item => (
+                  <div key={item.id} onClick={() => navigate(`/wardrobe/item/${item.id}`)}>
+                    <ClothingItem 
+                      id={item.id}
+                      name={item.name}
+                      category={item.category}
+                      color={item.color}
+                      image={item.image_url || '/placeholder.svg'}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
