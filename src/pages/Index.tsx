@@ -1,152 +1,190 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Shirt, Plus, Sparkles, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 import { useClothingItems } from '@/hooks/useClothingItems';
-import AIFashionAssistant from '@/components/AIFashionAssistant';
-import { Sparkles, Shirt, Eye } from 'lucide-react';
+import { useOutfits } from '@/hooks/useOutfits';
 
-const IndexPage = () => {
+const Index = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { items } = useClothingItems();
+  const { outfits } = useOutfits();
 
-  const recentItems = items.slice(0, 6);
-  const totalOutfits = Math.floor(items.length / 3); // Mock calculation
+  const recentItems = items.slice(0, 4);
+  const recentOutfits = outfits.slice(0, 3);
 
   return (
     <div className="space-y-6 pb-6">
-      {/* Header */}
-      <div className="flex justify-between items-center px-4 pt-6">
-        <div>
-          <h1 className="text-2xl font-bold">Welcome back!</h1>
-          <p className="text-muted-foreground text-sm">
-            {user?.email}
-          </p>
-        </div>
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={() => navigate('/wardrobe/add')}
-        >
-          + Add Item
-        </Button>
-      </div>
-      
-      {/* Stats Cards */}
-      <div className="grid grid-cols-3 gap-3 px-4">
-        <Card>
-          <CardContent className="p-3 text-center">
-            <Shirt className="h-6 w-6 mx-auto mb-1 text-outfit-primary" />
-            <h4 className="text-lg font-semibold">{items.length}</h4>
-            <p className="text-xs text-muted-foreground">Items</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-3 text-center">
-            <Eye className="h-6 w-6 mx-auto mb-1 text-outfit-primary" />
-            <h4 className="text-lg font-semibold">{totalOutfits}</h4>
-            <p className="text-xs text-muted-foreground">Outfits</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-3 text-center">
-            <Sparkles className="h-6 w-6 mx-auto mb-1 text-outfit-primary" />
-            <h4 className="text-lg font-semibold">AI</h4>
-            <p className="text-xs text-muted-foreground">Ready</p>
-          </CardContent>
-        </Card>
+      <div className="px-4 pt-6">
+        <h1 className="text-2xl font-bold mb-2">Welcome to OutfitFlex</h1>
+        <p className="text-muted-foreground">Organize your wardrobe and get AI-powered outfit suggestions</p>
       </div>
 
-      {/* AI Fashion Assistant */}
-      <div className="px-4">
-        <AIFashionAssistant />
-      </div>
-      
-      {/* Quick Actions */}
-      <div className="px-4">
-        <Card className="bg-gradient-to-r from-outfit-primary to-outfit-secondary">
-          <CardContent className="p-6 text-white">
-            <h2 className="text-xl font-bold mb-2">Create Your Next Look</h2>
-            <p className="text-sm mb-4 opacity-90">Mix and match items from your wardrobe</p>
-            <Button 
-              variant="secondary" 
-              className="bg-white text-outfit-secondary hover:bg-gray-100"
-              onClick={() => navigate('/outfits/create')}
-            >
-              Create Outfit
-            </Button>
+      <div className="px-4 space-y-4">
+        <Card className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold mb-2">Get Daily Outfit Ideas</h2>
+                <p className="text-purple-100 mb-4">AI-powered suggestions based on your wardrobe</p>
+                <Button 
+                  variant="secondary" 
+                  onClick={() => navigate('/outfits/suggestions')}
+                  className="bg-white text-purple-600 hover:bg-purple-50"
+                >
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Get Suggestions
+                </Button>
+              </div>
+              <Sparkles className="h-12 w-12 opacity-50" />
+            </div>
           </CardContent>
         </Card>
-      </div>
-      
-      {/* Categories */}
-      <div className="px-4">
-        <div className="flex justify-between items-center mb-2">
-          <h2 className="font-medium">Categories</h2>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="text-xs"
-            onClick={() => navigate('/wardrobe')}
-          >
-            View All
-          </Button>
-        </div>
-        <div className="flex gap-3 overflow-x-auto pb-2">
-          {['Tops', 'Bottoms', 'Dresses', 'Shoes', 'Accessories'].map((category) => (
-            <div 
-              key={category} 
-              className="flex-shrink-0 px-4 py-2 bg-accent rounded-full text-sm cursor-pointer"
-              onClick={() => navigate('/wardrobe')}
-            >
-              {category}
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      {/* Recent Items */}
-      {recentItems.length > 0 && (
-        <div className="px-4">
-          <div className="flex justify-between items-center mb-2">
-            <h2 className="font-medium">Recent Items</h2>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="text-xs"
-              onClick={() => navigate('/wardrobe')}
-            >
-              See All
-            </Button>
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            {recentItems.map((item) => (
-              <div 
-                key={item.id}
-                className="aspect-square bg-muted rounded-md overflow-hidden cursor-pointer"
-                onClick={() => navigate(`/wardrobe/item/${item.id}`)}
+
+        <div className="grid grid-cols-2 gap-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Shirt className="h-5 w-5" />
+                Wardrobe
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{items.length}</p>
+              <p className="text-sm text-muted-foreground">Items</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-2 w-full"
+                onClick={() => navigate('/wardrobe')}
               >
-                {item.image_url ? (
-                  <img
-                    src={item.image_url}
-                    alt={item.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <Shirt className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+                View All
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Outfits
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{outfits.length}</p>
+              <p className="text-sm text-muted-foreground">Created</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-2 w-full"
+                onClick={() => navigate('/outfits')}
+              >
+                View All
+              </Button>
+            </CardContent>
+          </Card>
         </div>
-      )}
+
+        {recentItems.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Recent Items</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-3">
+                {recentItems.map(item => (
+                  <div 
+                    key={item.id}
+                    className="cursor-pointer"
+                    onClick={() => navigate(`/wardrobe/item/${item.id}`)}
+                  >
+                    <div className="aspect-square bg-muted rounded-lg overflow-hidden mb-2">
+                      {item.image_url ? (
+                        <img
+                          src={item.image_url}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <div 
+                            className="w-8 h-8 rounded-full border-2 border-gray-300"
+                            style={{ backgroundColor: item.hex_color || item.color }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <h3 className="font-medium text-sm truncate">{item.name}</h3>
+                    <p className="text-xs text-muted-foreground">{item.category}</p>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {recentOutfits.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Recent Outfits</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {recentOutfits.map(outfit => (
+                  <div 
+                    key={outfit.id}
+                    className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent cursor-pointer"
+                    onClick={() => navigate(`/outfits/detail/${outfit.id}`)}
+                  >
+                    <div className="flex -space-x-2">
+                      {outfit.items?.slice(0, 3).map((item, index) => (
+                        <div
+                          key={item.id}
+                          className="w-8 h-8 rounded-full border-2 border-white bg-muted overflow-hidden"
+                          style={{ zIndex: 10 - index }}
+                        >
+                          {item.clothing_item?.image_url ? (
+                            <img
+                              src={item.clothing_item.image_url}
+                              alt={item.clothing_item.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div 
+                              className="w-full h-full"
+                              style={{ backgroundColor: item.clothing_item?.color || '#ccc' }}
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-medium text-sm">{outfit.name}</h3>
+                      <p className="text-xs text-muted-foreground">
+                        {outfit.items?.length || 0} items
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      <div className="flex justify-center gap-3 pt-2">
+        <Button onClick={() => navigate('/wardrobe/add')}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add Item
+        </Button>
+        <Button variant="outline" onClick={() => navigate('/outfits/suggestions')}>
+          <Sparkles className="h-4 w-4 mr-2" />
+          Get Suggestions
+        </Button>
+      </div>
     </div>
   );
 };
 
-export default IndexPage;
+export default Index;
