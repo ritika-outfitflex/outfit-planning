@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -5,11 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Upload, X } from 'lucide-react';
+import { ArrowLeft, Upload, X, Sparkles } from 'lucide-react';
 import { useClothingItems } from '@/hooks/useClothingItems';
-import { useColorDetection } from '@/hooks/useColorDetection';
+import { useAdvancedColorDetection } from '@/hooks/useAdvancedColorDetection';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import ColorDetectionPreview from '@/components/ColorDetectionPreview';
 
 const AddItemPage = () => {
   const [name, setName] = useState('');
@@ -26,31 +28,76 @@ const AddItemPage = () => {
   const [purchaseDate, setPurchaseDate] = useState('');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [colorDetectionResult, setColorDetectionResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   
   const navigate = useNavigate();
   const { addItem } = useClothingItems();
-  const { detectDominantColor, removeBackground, isProcessing } = useColorDetection();
+  const { processImage, isProcessing, progress } = useAdvancedColorDetection();
   const { toast } = useToast();
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validate file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please select an image smaller than 10MB",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please select an image file (JPEG, PNG, WebP)",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setSelectedImage(file);
     setImagePreview(URL.createObjectURL(file));
+    setColorDetectionResult(null);
 
     try {
-      const colorInfo = await detectDominantColor(file);
-      setColor(colorInfo.name);
+      toast({
+        title: "Processing image...",
+        description: "Removing background and detecting colors"
+      });
+
+      const result = await processImage(file);
+      setColorDetectionResult(result);
+      
+      // Auto-set the primary color
+      if (result.primaryColor) {
+        setColor(result.primaryColor.name);
+      }
       
       toast({
-        title: "Color detected!",
-        description: `Detected color: ${colorInfo.name}`
+        title: "Colors detected!",
+        description: `Primary color: ${result.primaryColor.name}`
       });
     } catch (error) {
       console.error('Color detection failed:', error);
+      toast({
+        title: "Color detection failed",
+        description: "Using fallback color detection",
+        variant: "destructive"
+      });
     }
+  };
+
+  const handleColorSelect = (colorInfo: any) => {
+    setColor(colorInfo.name);
+    toast({
+      title: "Color selected",
+      description: `Selected: ${colorInfo.name}`
+    });
   };
 
   const uploadImage = async (file: File): Promise<string> => {
@@ -156,6 +203,7 @@ const AddItemPage = () => {
                   onClick={() => {
                     setSelectedImage(null);
                     setImagePreview(null);
+                    setColorDetectionResult(null);
                   }}
                 >
                   <X className="h-4 w-4" />
@@ -180,11 +228,29 @@ const AddItemPage = () => {
             )}
           </div>
           {isProcessing && (
-            <p className="text-xs text-muted-foreground mt-1">
-              Processing image and detecting color...
-            </p>
+            <div className="mt-2 space-y-1">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 animate-spin" />
+                <span className="text-xs text-muted-foreground">
+                  Processing image and detecting colors... {progress}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-1.5">
+                <div 
+                  className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
           )}
         </div>
+
+        {colorDetectionResult && (
+          <ColorDetectionPreview 
+            result={colorDetectionResult}
+            onColorSelect={handleColorSelect}
+          />
+        )}
 
         {/* Basic Info */}
         <div className="space-y-4">
@@ -221,7 +287,7 @@ const AddItemPage = () => {
               <Input 
                 value={color}
                 onChange={(e) => setColor(e.target.value)}
-                placeholder="e.g., Navy Blue"
+                placeholder="e.g., Royal Blue"
                 className="mt-1"
               />
             </div>
