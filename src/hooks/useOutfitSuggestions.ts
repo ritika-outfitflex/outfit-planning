@@ -200,25 +200,27 @@ export const useOutfitSuggestions = () => {
   };
 
   const isOccasionMatch = (item: ClothingItem, occasion?: string): boolean => {
-    if (!occasion || !item.occasion) return true;
-    return item.occasion === occasion || item.occasion === 'casual';
+    if (!occasion || !item.occasions || item.occasions.length === 0) return true;
+    return item.occasions.includes(occasion) || item.occasions.includes('casual');
   };
 
   const isSeasonMatch = (item: ClothingItem, season?: string): boolean => {
-    if (!season || !item.season) return true;
-    return item.season === season || item.season === 'all-season';
+    if (!season || !item.seasons || item.seasons.length === 0) return true;
+    return item.seasons.includes(season) || item.seasons.includes('all-season');
   };
 
   const calculateConfidence = (items: ClothingItem[], preferences: any): number => {
     let score = 70; // Base score
     
     // Bonus for occasion match
-    if (preferences.occasion && items.some(item => item.occasion === preferences.occasion)) {
+    if (preferences.occasion && items.some(item => 
+      item.occasions && item.occasions.includes(preferences.occasion))) {
       score += 10;
     }
     
     // Bonus for season match
-    if (preferences.season && items.some(item => item.season === preferences.season)) {
+    if (preferences.season && items.some(item => 
+      item.seasons && item.seasons.includes(preferences.season))) {
       score += 10;
     }
     

@@ -88,6 +88,7 @@ const WardrobePage = () => {
                       name={item.name}
                       category={item.category}
                       color={item.color}
+                      hex_color={item.hex_color}
                       image={item.image_url || '/placeholder.svg'}
                     />
                   </div>
