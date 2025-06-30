@@ -111,6 +111,11 @@ const AddItemPage = () => {
       name: color.name,
       hex: color.hex
     });
+    
+    toast({
+      title: "Color selected!",
+      description: `Selected ${color.name} as the primary color.`,
+    });
   };
 
   const uploadImage = async (file: File): Promise<string> => {
@@ -215,6 +220,15 @@ const AddItemPage = () => {
                       className="w-32 h-32 object-cover rounded-lg mx-auto"
                     />
                     <p className="text-sm text-muted-foreground">{selectedFile.name}</p>
+                    {selectedColor.hex && (
+                      <div className="flex items-center justify-center gap-2 mt-2">
+                        <div 
+                          className="w-5 h-5 rounded-full border border-gray-300"
+                          style={{ backgroundColor: selectedColor.hex }}
+                        />
+                        <span className="text-sm font-medium">{selectedColor.name}</span>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -251,6 +265,7 @@ const AddItemPage = () => {
             <ColorDetectionPreview 
               result={colorDetectionResult}
               onColorSelect={handleColorSelect}
+              selectedColor={selectedColor}
             />
           )}
         </div>
