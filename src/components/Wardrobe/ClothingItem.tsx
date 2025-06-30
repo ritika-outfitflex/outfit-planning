@@ -7,10 +7,11 @@ export interface ClothingItemProps {
   name: string;
   category: string;
   color: string;
+  hex_color: string;
   image: string;
 }
 
-const ClothingItem: React.FC<ClothingItemProps> = ({ name, category, color, image }) => {
+const ClothingItem: React.FC<ClothingItemProps> = ({ name, category, color, hex_color, image }) => {
   return (
     <Card className="overflow-hidden h-full animate-fade-in hover:shadow-md transition-shadow">
       <CardContent className="p-0 h-full flex flex-col">
@@ -27,7 +28,7 @@ const ClothingItem: React.FC<ClothingItemProps> = ({ name, category, color, imag
             <span className="text-xs text-muted-foreground">{category}</span>
             <div 
               className="w-4 h-4 rounded-full border border-border" 
-              style={{ backgroundColor: color }}
+              style={{ backgroundColor: hex_color || color }}
               aria-label={`Color: ${color}`}
             />
           </div>

@@ -9,12 +9,12 @@ export interface ClothingItem {
   category: string;
   subcategory?: string;
   color: string;
-  hex_color?: string;
+  hex_color: string;
   brand?: string;
   size?: string;
   material?: string;
-  season?: string;
-  occasion?: string;
+  seasons?: string[];
+  occasions?: string[];
   image_url?: string;
   notes?: string;
   purchase_date?: string;

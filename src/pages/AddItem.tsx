@@ -6,154 +6,168 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, Upload, X, Sparkles } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { ArrowLeft, Upload, Camera, Palette } from 'lucide-react';
 import { useClothingItems } from '@/hooks/useClothingItems';
 import { useAdvancedColorDetection } from '@/hooks/useAdvancedColorDetection';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import ColorDetectionPreview from '@/components/ColorDetectionPreview';
+import { MultiSelect } from '@/components/MultiSelect';
 
 const AddItemPage = () => {
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
   const [subcategory, setSubcategory] = useState('');
-  const [color, setColor] = useState('');
+  const [seasons, setSeasons] = useState<string[]>([]);
+  const [occasions, setOccasions] = useState<string[]>([]);
   const [brand, setBrand] = useState('');
   const [size, setSize] = useState('');
   const [material, setMaterial] = useState('');
-  const [season, setSeason] = useState('');
-  const [occasion, setOccasion] = useState('');
-  const [notes, setNotes] = useState('');
   const [price, setPrice] = useState('');
-  const [purchaseDate, setPurchaseDate] = useState('');
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [notes, setNotes] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedColor, setSelectedColor] = useState({ name: '', hex: '' });
   const [colorDetectionResult, setColorDetectionResult] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  
+  const [uploading, setUploading] = useState(false);
+
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { addItem } = useClothingItems();
   const { processImage, isProcessing, progress } = useAdvancedColorDetection();
   const { toast } = useToast();
 
-  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const categories = [
+    'Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Shoes', 
+    'Accessories', 'Underwear', 'Sleepwear', 'Activewear'
+  ];
+
+  const subcategories = {
+    'Tops': ['T-shirt', 'Shirt', 'Blouse', 'Sweater', 'Tank Top', 'Hoodie'],
+    'Bottoms': ['Jeans', 'Pants', 'Shorts', 'Skirt', 'Leggings'],
+    'Dresses': ['Casual', 'Formal', 'Maxi', 'Mini', 'Midi'],
+    'Outerwear': ['Jacket', 'Coat', 'Blazer', 'Cardigan'],
+    'Shoes': ['Sneakers', 'Boots', 'Heels', 'Flats', 'Sandals'],
+    'Accessories': ['Bag', 'Hat', 'Scarf', 'Belt', 'Jewelry'],
+    'Underwear': ['Bra', 'Underwear', 'Socks'],
+    'Sleepwear': ['Pajamas', 'Nightgown', 'Robe'],
+    'Activewear': ['Sports Bra', 'Workout Top', 'Yoga Pants', 'Shorts']
+  };
+
+  const seasonOptions = [
+    { value: 'spring', label: 'Spring' },
+    { value: 'summer', label: 'Summer' },
+    { value: 'fall', label: 'Fall' },
+    { value: 'winter', label: 'Winter' }
+  ];
+
+  const occasionOptions = [
+    { value: 'casual', label: 'Casual' },
+    { value: 'work', label: 'Work' },
+    { value: 'formal', label: 'Formal' },
+    { value: 'party', label: 'Party' },
+    { value: 'date', label: 'Date' },
+    { value: 'workout', label: 'Workout' }
+  ];
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file size (10MB limit)
-    if (file.size > 10 * 1024 * 1024) {
-      toast({
-        title: "File too large",
-        description: "Please select an image smaller than 10MB",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       toast({
         title: "Invalid file type",
-        description: "Please select an image file (JPEG, PNG, WebP)",
+        description: "Please select an image file.",
         variant: "destructive"
       });
       return;
     }
 
-    setSelectedImage(file);
-    setImagePreview(URL.createObjectURL(file));
-    setColorDetectionResult(null);
-
+    setSelectedFile(file);
+    
     try {
-      toast({
-        title: "Processing image...",
-        description: "Removing background and detecting colors"
-      });
-
       const result = await processImage(file);
       setColorDetectionResult(result);
       
-      // Auto-set the primary color
       if (result.primaryColor) {
-        setColor(result.primaryColor.name);
+        setSelectedColor({
+          name: result.primaryColor.name,
+          hex: result.primaryColor.hex
+        });
       }
-      
-      toast({
-        title: "Colors detected!",
-        description: `Primary color: ${result.primaryColor.name}`
-      });
     } catch (error) {
-      console.error('Color detection failed:', error);
+      console.error('Color detection error:', error);
       toast({
         title: "Color detection failed",
-        description: "Using fallback color detection",
+        description: "We'll use a default color. You can change it later.",
         variant: "destructive"
       });
     }
   };
 
-  const handleColorSelect = (colorInfo: any) => {
-    setColor(colorInfo.name);
-    toast({
-      title: "Color selected",
-      description: `Selected: ${colorInfo.name}`
+  const handleColorSelect = (color: any) => {
+    setSelectedColor({
+      name: color.name,
+      hex: color.hex
     });
   };
 
   const uploadImage = async (file: File): Promise<string> => {
+    if (!user) throw new Error('No user found');
+
     const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
-    const filePath = `${fileName}`;
+    const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
     const { error: uploadError } = await supabase.storage
       .from('clothing-images')
-      .upload(filePath, file);
+      .upload(fileName, file);
 
-    if (uploadError) {
-      throw uploadError;
-    }
+    if (uploadError) throw uploadError;
 
     const { data } = supabase.storage
       .from('clothing-images')
-      .getPublicUrl(filePath);
+      .getPublicUrl(fileName);
 
     return data.publicUrl;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !category || !color) {
+    
+    if (!name.trim() || !category) {
       toast({
-        title: "Missing required fields",
-        description: "Please fill in name, category, and color.",
+        title: "Required fields missing",
+        description: "Please fill in the name and category.",
         variant: "destructive"
       });
       return;
     }
 
-    setLoading(true);
+    setUploading(true);
+    
     try {
       let imageUrl = '';
-      if (selectedImage) {
-        imageUrl = await uploadImage(selectedImage);
+      
+      if (selectedFile) {
+        imageUrl = await uploadImage(selectedFile);
       }
 
       await addItem({
         name: name.trim(),
         category,
         subcategory: subcategory || undefined,
-        color,
-        brand: brand || undefined,
-        size: size || undefined,
-        material: material || undefined,
-        season: season || undefined,
-        occasion: occasion || undefined,
-        notes: notes || undefined,
-        price: price ? parseFloat(price) : undefined,
-        purchase_date: purchaseDate || undefined,
+        color: selectedColor.name || 'Unknown',
+        hex_color: selectedColor.hex || '#808080',
+        brand: brand.trim() || undefined,
+        size: size.trim() || undefined,
+        material: material.trim() || undefined,
+        seasons: seasons.length > 0 ? seasons : undefined,
+        occasions: occasions.length > 0 ? occasions : undefined,
         image_url: imageUrl || undefined,
-        is_favorite: false,
-        last_worn: undefined
+        notes: notes.trim() || undefined,
+        price: price ? parseFloat(price) : undefined,
+        is_favorite: false
       });
 
       toast({
@@ -170,7 +184,7 @@ const AddItemPage = () => {
         variant: "destructive"
       });
     } finally {
-      setLoading(false);
+      setUploading(false);
     }
   };
 
@@ -186,80 +200,68 @@ const AddItemPage = () => {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="text-sm font-medium">Photo</label>
-          <div className="mt-1">
-            {imagePreview ? (
-              <div className="relative">
-                <img 
-                  src={imagePreview} 
-                  alt="Preview" 
-                  className="w-full h-48 object-cover rounded-lg"
-                />
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="icon"
-                  className="absolute top-2 right-2"
-                  onClick={() => {
-                    setSelectedImage(null);
-                    setImagePreview(null);
-                    setColorDetectionResult(null);
-                  }}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : (
-              <Card className="border-dashed border-2 h-48 flex items-center justify-center cursor-pointer hover:bg-accent">
-                <CardContent className="p-6 text-center">
-                  <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    Click to upload photo
-                  </p>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageSelect}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    disabled={isProcessing}
-                  />
-                </CardContent>
-              </Card>
-            )}
+          <label className="text-sm font-medium mb-2 block">Photo</label>
+          <div className="space-y-4">
+            <Card 
+              className="border-2 border-dashed cursor-pointer hover:bg-accent/50 transition-colors"
+              onClick={() => document.getElementById('file-input')?.click()}
+            >
+              <CardContent className="p-6 text-center">
+                {selectedFile ? (
+                  <div className="space-y-2">
+                    <img 
+                      src={URL.createObjectURL(selectedFile)} 
+                      alt="Preview" 
+                      className="w-32 h-32 object-cover rounded-lg mx-auto"
+                    />
+                    <p className="text-sm text-muted-foreground">{selectedFile.name}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Upload className="h-12 w-12 mx-auto text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                      Tap to upload a photo
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            
+            <input
+              id="file-input"
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
           </div>
+
           {isProcessing && (
-            <div className="mt-2 space-y-1">
+            <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 animate-spin" />
-                <span className="text-xs text-muted-foreground">
-                  Processing image and detecting colors... {progress}%
-                </span>
+                <Palette className="h-4 w-4" />
+                <span className="text-sm">Processing image...</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-1.5">
-                <div 
-                  className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
+              <Progress value={progress} className="w-full" />
             </div>
+          )}
+
+          {colorDetectionResult && (
+            <ColorDetectionPreview 
+              result={colorDetectionResult}
+              onColorSelect={handleColorSelect}
+            />
           )}
         </div>
 
-        {colorDetectionResult && (
-          <ColorDetectionPreview 
-            result={colorDetectionResult}
-            onColorSelect={handleColorSelect}
-          />
-        )}
-
-        {/* Basic Info */}
         <div className="space-y-4">
           <div>
             <label className="text-sm font-medium">Item Name *</label>
             <Input 
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Blue Denim Jacket"
+              placeholder="e.g., Blue Cotton T-shirt"
               className="mt-1"
             />
           </div>
@@ -272,26 +274,41 @@ const AddItemPage = () => {
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Tops">Tops</SelectItem>
-                  <SelectItem value="Bottoms">Bottoms</SelectItem>
-                  <SelectItem value="Dresses">Dresses</SelectItem>
-                  <SelectItem value="Shoes">Shoes</SelectItem>
-                  <SelectItem value="Accessories">Accessories</SelectItem>
-                  <SelectItem value="Outerwear">Outerwear</SelectItem>
+                  {categories.map(cat => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <label className="text-sm font-medium">Color *</label>
-              <Input 
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
-                placeholder="e.g., Royal Blue"
-                className="mt-1"
-              />
+              <label className="text-sm font-medium">Subcategory</label>
+              <Select value={subcategory} onValueChange={setSubcategory}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select subcategory" />
+                </SelectTrigger>
+                <SelectContent>
+                  {category && subcategories[category as keyof typeof subcategories]?.map(sub => (
+                    <SelectItem key={sub} value={sub}>{sub}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
+
+          <MultiSelect
+            label="Seasons"
+            options={seasonOptions}
+            value={seasons}
+            onChange={setSeasons}
+          />
+
+          <MultiSelect
+            label="Occasions"
+            options={occasionOptions}
+            value={occasions}
+            onChange={setOccasions}
+          />
 
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -299,56 +316,40 @@ const AddItemPage = () => {
               <Input 
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
-                placeholder="e.g., Zara"
+                placeholder="e.g., Nike"
                 className="mt-1"
               />
             </div>
-
             <div>
               <label className="text-sm font-medium">Size</label>
               <Input 
                 value={size}
                 onChange={(e) => setSize(e.target.value)}
-                placeholder="e.g., M"
+                placeholder="e.g., M, 32, 8"
                 className="mt-1"
               />
             </div>
           </div>
-        </div>
 
-        {/* Additional Details */}
-        <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium">Season</label>
-              <Select value={season} onValueChange={setSeason}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Select season" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="spring">Spring</SelectItem>
-                  <SelectItem value="summer">Summer</SelectItem>
-                  <SelectItem value="fall">Fall</SelectItem>
-                  <SelectItem value="winter">Winter</SelectItem>
-                  <SelectItem value="all-season">All Season</SelectItem>
-                </SelectContent>
-              </Select>
+              <label className="text-sm font-medium">Material</label>
+              <Input 
+                value={material}
+                onChange={(e) => setMaterial(e.target.value)}
+                placeholder="e.g., Cotton"
+                className="mt-1"
+              />
             </div>
-
             <div>
-              <label className="text-sm font-medium">Occasion</label>
-              <Select value={occasion} onValueChange={setOccasion}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Select occasion" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="casual">Casual</SelectItem>
-                  <SelectItem value="work">Work</SelectItem>
-                  <SelectItem value="formal">Formal</SelectItem>
-                  <SelectItem value="party">Party</SelectItem>
-                  <SelectItem value="workout">Workout</SelectItem>
-                </SelectContent>
-              </Select>
+              <label className="text-sm font-medium">Price</label>
+              <Input 
+                type="number"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                placeholder="0.00"
+                className="mt-1"
+              />
             </div>
           </div>
 
@@ -367,9 +368,9 @@ const AddItemPage = () => {
         <Button 
           type="submit" 
           className="w-full" 
-          disabled={loading || !name.trim() || !category || !color}
+          disabled={uploading || !name.trim() || !category}
         >
-          {loading ? 'Adding...' : 'Add Item'}
+          {uploading ? 'Adding Item...' : 'Add to Wardrobe'}
         </Button>
       </form>
     </div>

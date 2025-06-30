@@ -45,7 +45,7 @@ export type Database = {
           category: string
           color: string
           created_at: string | null
-          hex_color: string | null
+          hex_color: string
           id: string
           image_url: string | null
           is_favorite: boolean | null
@@ -53,10 +53,10 @@ export type Database = {
           material: string | null
           name: string
           notes: string | null
-          occasion: string | null
+          occasions: string[] | null
           price: number | null
           purchase_date: string | null
-          season: string | null
+          seasons: string[] | null
           size: string | null
           subcategory: string | null
           tags: string[] | null
@@ -69,7 +69,7 @@ export type Database = {
           category: string
           color: string
           created_at?: string | null
-          hex_color?: string | null
+          hex_color?: string
           id?: string
           image_url?: string | null
           is_favorite?: boolean | null
@@ -77,10 +77,10 @@ export type Database = {
           material?: string | null
           name: string
           notes?: string | null
-          occasion?: string | null
+          occasions?: string[] | null
           price?: number | null
           purchase_date?: string | null
-          season?: string | null
+          seasons?: string[] | null
           size?: string | null
           subcategory?: string | null
           tags?: string[] | null
@@ -93,7 +93,7 @@ export type Database = {
           category?: string
           color?: string
           created_at?: string | null
-          hex_color?: string | null
+          hex_color?: string
           id?: string
           image_url?: string | null
           is_favorite?: boolean | null
@@ -101,10 +101,10 @@ export type Database = {
           material?: string | null
           name?: string
           notes?: string | null
-          occasion?: string | null
+          occasions?: string[] | null
           price?: number | null
           purchase_date?: string | null
-          season?: string | null
+          seasons?: string[] | null
           size?: string | null
           subcategory?: string | null
           tags?: string[] | null
@@ -140,6 +140,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      outfit_calendar: {
+        Row: {
+          created_at: string | null
+          date: string
+          id: string
+          notes: string | null
+          outfit_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          id?: string
+          notes?: string | null
+          outfit_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          id?: string
+          notes?: string | null
+          outfit_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outfit_calendar_outfit_id_fkey"
+            columns: ["outfit_id"]
+            isOneToOne: false
+            referencedRelation: "outfits"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       outfit_items: {
         Row: {

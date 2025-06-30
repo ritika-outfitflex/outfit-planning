@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,6 +17,7 @@ import ItemDetail from "./pages/ItemDetail";
 import CreateOutfit from "./pages/CreateOutfit";
 import OutfitDetail from "./pages/OutfitDetail";
 import OutfitSuggestions from "./pages/OutfitSuggestions";
+import Calendar from "./pages/Calendar";
 import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient();
@@ -42,6 +44,7 @@ const App = () => (
               <Route path="outfits/create" element={<CreateOutfit />} />
               <Route path="outfits/detail/:id" element={<OutfitDetail />} />
               <Route path="outfits/suggestions" element={<OutfitSuggestions />} />
+              <Route path="calendar" element={<Calendar />} />
               <Route path="profile" element={<Profile />} />
             </Route>
             <Route path="*" element={<NotFound />} />
