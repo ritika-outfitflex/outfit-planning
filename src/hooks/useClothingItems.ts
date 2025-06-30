@@ -10,7 +10,6 @@ export interface ClothingItem {
   subcategory?: string;
   color: string;
   hex_color: string;
-  brand?: string;
   size?: string;
   material?: string;
   seasons?: string[];
@@ -18,7 +17,6 @@ export interface ClothingItem {
   image_url?: string;
   notes?: string;
   purchase_date?: string;
-  price?: number;
   times_worn: number;
   last_worn?: string;
   is_favorite: boolean;
