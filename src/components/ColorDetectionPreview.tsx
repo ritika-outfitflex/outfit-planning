@@ -82,58 +82,32 @@ const ColorDetectionPreview: React.FC<ColorDetectionPreviewProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
+          <div className="flex flex-wrap gap-2">
             {result.dominantColors.map((color, index) => {
               const isSelected = selectedColor?.hex === color.hex;
               
               return (
                 <div 
                   key={index}
-                  className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all border-2 ${
-                    isSelected 
-                      ? 'bg-primary/10 border-primary shadow-md' 
-                      : 'hover:bg-accent border-transparent'
+                  className={`relative cursor-pointer transition-all ${
+                    isSelected ? 'scale-110 ring-2 ring-primary ring-offset-2' : 'hover:scale-105'
                   }`}
                   onClick={() => onColorSelect(color)}
                 >
-                  <div className="relative">
-                    <div 
-                      className="w-10 h-10 rounded-full border-2 border-gray-200 flex-shrink-0"
-                      style={{ backgroundColor: color.hex }}
-                    />
-                    {isSelected && (
-                      <div className="absolute -top-1 -right-1 bg-primary rounded-full w-5 h-5 flex items-center justify-center">
-                        <Check className="h-3 w-3 text-white" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className={`font-medium ${isSelected ? 'text-primary' : ''}`}>
-                        {color.name}
-                      </span>
-                      {index === 0 && (
-                        <Badge variant="secondary" className="text-xs">Primary</Badge>
-                      )}
-                      {isSelected && (
-                        <Badge variant="default" className="text-xs">Selected</Badge>
-                      )}
+                  <div 
+                    className="w-12 h-12 rounded-lg border-2 border-border"
+                    style={{ backgroundColor: color.hex }}
+                  />
+                  {isSelected && (
+                    <div className="absolute -top-1 -right-1 bg-primary rounded-full w-5 h-5 flex items-center justify-center">
+                      <Check className="h-3 w-3 text-white" />
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <span>{color.hex}</span>
-                      <span>•</span>
-                      <span>{color.percentage}%</span>
+                  )}
+                  {index === 0 && (
+                    <div className="absolute -bottom-1 -right-1 bg-secondary rounded-full w-4 h-4 flex items-center justify-center">
+                      <div className="w-2 h-2 bg-secondary-foreground rounded-full" />
                     </div>
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      copyToClipboard(color.hex);
-                    }}
-                    className="p-1 hover:bg-background rounded opacity-60 hover:opacity-100"
-                  >
-                    <Copy className="h-4 w-4" />
-                  </button>
+                  )}
                 </div>
               );
             })}
