@@ -176,15 +176,44 @@ const OutfitSuggestionsPage = () => {
                   <Badge variant="secondary">{suggestion.match_score} match</Badge>
                 </div>
 
-                <div className="space-y-2 mb-3">
+                <div className="space-y-3 mb-3">
                   <h4 className="text-sm font-medium">Items in this outfit:</h4>
-                  <div className="flex flex-wrap gap-1">
-                    {suggestion.items.map((itemName, itemIndex) => (
-                      <Badge key={itemIndex} variant="outline" className="text-xs">
-                        {itemName}
-                      </Badge>
+                  <div className="grid grid-cols-3 gap-2">
+                    {suggestion.items.map((item, itemIndex) => (
+                      <div key={itemIndex} className="text-center">
+                        <div className="aspect-square bg-muted rounded-md overflow-hidden mb-1">
+                          {item.image_url ? (
+                            <img
+                              src={item.image_url}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                              No Image
+                            </div>
+                          )}
+                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          {item.name}
+                        </Badge>
+                      </div>
                     ))}
                   </div>
+                  
+                  {suggestion.footwear && (
+                    <div className="mt-3">
+                      <h5 className="text-xs font-medium text-muted-foreground mb-1">Footwear:</h5>
+                      <Badge variant="secondary" className="text-xs">{suggestion.footwear}</Badge>
+                    </div>
+                  )}
+                  
+                  {suggestion.accessories && (
+                    <div className="mt-2">
+                      <h5 className="text-xs font-medium text-muted-foreground mb-1">Accessories:</h5>
+                      <p className="text-xs text-muted-foreground">{suggestion.accessories}</p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">

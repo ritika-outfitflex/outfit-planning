@@ -7,7 +7,13 @@ import { ClothingItem } from './useClothingItems';
 export interface OutfitSuggestion {
   title: string;
   match_score: string;
-  items: string[];
+  items: Array<{
+    name: string;
+    image_url: string;
+    id: string;
+  }>;
+  footwear: string;
+  accessories: string;
   occasion: string;
   reasoning: string;
 }
@@ -37,7 +43,37 @@ export const useOutfitSuggestions = () => {
 
       if (error) throw error;
 
-      setSuggestions(data.outfits || []);
+      // Enhance suggestions with actual item data
+      const enhancedSuggestions = await Promise.all((data.outfits || []).map(async (outfit: any) => {
+        // Get clothing items for this user
+        const { data: userItems } = await supabase
+          .from('clothing_items')
+          .select('id, name, image_url')
+          .eq('user_id', user.id);
+
+        // Match suggested item names to actual items
+        const matchedItems = outfit.items.map((itemName: string) => {
+          const found = userItems?.find(item => 
+            item.name.toLowerCase() === itemName.toLowerCase()
+          );
+          return found ? {
+            name: found.name,
+            image_url: found.image_url,
+            id: found.id
+          } : {
+            name: itemName,
+            image_url: '',
+            id: ''
+          };
+        });
+
+        return {
+          ...outfit,
+          items: matchedItems
+        };
+      }));
+
+      setSuggestions(enhancedSuggestions);
     } catch (error) {
       console.error('Error generating suggestions:', error);
       setSuggestions([]);
@@ -61,8 +97,8 @@ export const useOutfitSuggestions = () => {
       if (itemsError) throw itemsError;
 
       // Match item names to actual clothing items
-      const matchedItems = suggestion.items.map(itemName => 
-        items?.find(item => item.name.toLowerCase() === itemName.toLowerCase())
+      const matchedItems = suggestion.items.map(suggestionItem => 
+        items?.find(item => item.name.toLowerCase() === suggestionItem.name.toLowerCase())
       ).filter(Boolean);
 
       if (matchedItems.length === 0) {
