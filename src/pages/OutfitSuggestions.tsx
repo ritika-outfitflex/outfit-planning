@@ -165,46 +165,32 @@ const OutfitSuggestionsPage = () => {
       {suggestions.length > 0 && (
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Suggested Outfits</h2>
-          {suggestions.map((suggestion) => (
-            <Card key={suggestion.id}>
+          {suggestions.map((suggestion, index) => (
+            <Card key={index}>
               <CardContent className="p-4">
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h3 className="font-semibold">{suggestion.name}</h3>
-                    <p className="text-sm text-muted-foreground">{suggestion.description}</p>
+                    <h3 className="font-semibold">{suggestion.title}</h3>
+                    <p className="text-sm text-muted-foreground">{suggestion.reasoning}</p>
                   </div>
-                  <Badge variant="secondary">{suggestion.confidence}% match</Badge>
+                  <Badge variant="secondary">{suggestion.match_score} match</Badge>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 mb-3">
-                  {suggestion.items.slice(0, 4).map((item) => (
-                    <div key={item.id} className="aspect-square bg-muted rounded-md overflow-hidden">
-                      {item.image_url ? (
-                        <img
-                          src={item.image_url}
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <div 
-                            className="w-8 h-8 rounded-full border-2 border-gray-300"
-                            style={{ backgroundColor: item.hex_color || item.color }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                <div className="space-y-2 mb-3">
+                  <h4 className="text-sm font-medium">Items in this outfit:</h4>
+                  <div className="flex flex-wrap gap-1">
+                    {suggestion.items.map((itemName, itemIndex) => (
+                      <Badge key={itemIndex} variant="outline" className="text-xs">
+                        {itemName}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between text-sm text-muted-foreground mb-3">
                   <span>{suggestion.items.length} items</span>
                   <Badge variant="outline">{suggestion.occasion}</Badge>
                 </div>
-
-                <p className="text-xs text-muted-foreground mb-3">
-                  {suggestion.reasoning}
-                </p>
 
                 <Button 
                   onClick={() => handleSaveOutfit(suggestion)}
