@@ -63,7 +63,18 @@ serve(async (req) => {
       notes: item.notes
     }));
 
-    const prompt = `You are an expert fashion stylist. Suggest outfit combinations from the user's wardrobe database. Always tailor the suggestions to the given filters:
+    const prompt = `You are a professional fashion stylist for the OutfitFlex app.
+You must suggest outfits using the user's wardrobe only.
+
+Wardrobe items will always be provided with names and image URLs.
+
+Use only items from wardrobe for tops, bottoms, dresses, layering, and accessories.
+
+For footwear:
+- If footwear exists in wardrobe, suggest from wardrobe.
+- If no footwear is in wardrobe, recommend suitable styles (e.g., "white sneakers", "tan loafers") but clearly mark them as suggestions only.
+
+Always include accessory or styling tips (e.g., "pair with a slim black belt" or "add a silver pendant necklace").
 
 Filters:
 - Occasion: ${filters.occasion || 'any'}
@@ -72,28 +83,34 @@ Filters:
 - Style preference: ${filters.style || 'any'}
 
 Rules:
-1. Suggest complete outfit sets (top + bottom + footwear + optional accessories or layering)
-2. Ensure the outfit matches the occasion (e.g., Work → shirts, blazers, trousers; Party → dresses, stylish tops, heels)
-3. Match the season/weather (e.g., Summer → breathable fabrics, Winter → jackets/layers, Rainy → waterproof footwear)
-4. Respect the style filter (Minimalist → neutral tones/simple cuts, Boho → flowy/colorful, etc.)
-5. Use items only from the wardrobe dataset provided. If not enough items exist, suggest the closest alternative
-6. Return maximum 5 outfit suggestions
-7. Each outfit should have a match score between 70-98%
+1. Outfits must match Occasion, Season, Weather, and Style preference given by the user.
+2. Provide 2–3 outfit combinations.
+3. Each outfit must return:
+   - title (short name for outfit)
+   - match_score (percentage of fit)
+   - items (list of wardrobe items by name → so app can fetch stored image URLs)
+   - footwear (either wardrobe item or text suggestion if wardrobe has none)
+   - accessories (tips on accessories to complete the look)
+   - reasoning (why this outfit fits the filters)
 
 Wardrobe items available:
 ${JSON.stringify(wardrobeData, null, 2)}
 
-Return results in this exact JSON structure (no additional text):
+Output must be JSON in this exact structure:
 {
   "outfits": [
     {
-      "title": "White Shirt & Black Trousers",
+      "title": "Workday Minimalist",
       "match_score": "92%",
-      "items": ["White Cotton Shirt", "Black Slim-fit Trousers", "Brown Leather Belt", "Oxford Shoes"],
-      "occasion": "Work",
-      "reasoning": "Formal yet breathable look for summer workday in sunny weather."
+      "items": ["White Polka Top", "Blue Cargo Jeans"],
+      "footwear": "White Sneakers (suggestion)",
+      "accessories": "Simple silver chain, black tote bag",
+      "reasoning": "Breathable outfit for summer workday, minimalist and functional."
     }
-  ]
+  ],
+  "feedback": {
+    "like_dislike": "User can mark Like or Dislike for training."
+  }
 }`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
