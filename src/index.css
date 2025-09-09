@@ -5,7 +5,7 @@
 
 @layer base {
   :root {
-    --background: 250 30% 98%;
+    --background: 330 15% 98%;
     --foreground: 240 10% 15%;
 
     --card: 0 0% 100%;
@@ -14,26 +14,37 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 15%;
 
-    --primary: 258 83% 74%;
+    --primary: 315 70% 65%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 260 25% 54%;
+    --secondary: 280 60% 70%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 240 5% 96%;
+    --muted: 330 5% 96%;
     --muted-foreground: 240 5% 50%;
 
-    --accent: 260 25% 94%;
+    --accent: 320 25% 94%;
     --accent-foreground: 240 10% 15%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 258 83% 74%;
+    --border: 320 6% 90%;
+    --input: 320 6% 90%;
+    --ring: 315 70% 65%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
+
+    /* Fashion-focused gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(315 70% 65%), hsl(280 60% 70%));
+    --gradient-secondary: linear-gradient(135deg, hsl(330 80% 85%), hsl(315 70% 90%));
+    --gradient-hero: linear-gradient(135deg, hsl(315 70% 65%) 0%, hsl(280 60% 70%) 50%, hsl(260 80% 75%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(330 20% 98%) 100%);
+    
+    /* Interactive shadows */
+    --shadow-elegant: 0 10px 30px -10px hsl(315 70% 65% / 0.3);
+    --shadow-glow: 0 0 40px hsl(315 70% 65% / 0.2);
+    --shadow-card: 0 4px 20px -4px hsl(315 20% 50% / 0.1);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5% 26%;
