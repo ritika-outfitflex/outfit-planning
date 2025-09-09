@@ -3,26 +3,37 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
-import { Heart, Eye } from 'lucide-react';
+import { Heart, Eye, Sparkles, Star, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useOutfits } from '@/hooks/useOutfits';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const OutfitsPage = () => {
   const navigate = useNavigate();
   const { outfits, loading } = useOutfits();
+  const { getFirstName } = useUserProfile();
   
   const savedOutfits = outfits.filter(outfit => outfit.is_favorite);
   const recentOutfits = outfits.slice(0, 5);
 
   if (loading) {
     return (
-      <div className="space-y-4 pb-6">
-        <div className="px-4 pt-6">
-          <h1 className="text-2xl font-bold mb-4">Your Outfits</h1>
+      <div className="space-y-6 pb-6 animate-fade-in">
+        <div className="relative px-4 pt-8 pb-6 bg-gradient-hero rounded-b-[2rem] shadow-elegant">
+          <div className="text-center text-white space-y-3">
+            <div className="flex justify-center items-center gap-2 mb-2">
+              <Sparkles className="h-6 w-6 text-pink-200 animate-pulse" />
+              <h1 className="text-3xl font-bold">{getFirstName()}'s Outfits</h1>
+              <Star className="h-6 w-6 text-yellow-200 animate-pulse" />
+            </div>
+            <p className="text-purple-100 text-lg font-medium">Your Style Combinations</p>
+          </div>
+        </div>
+        <div className="px-4">
           <div className="grid gap-4">
             {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-32 rounded-lg" />
+              <Skeleton key={i} className="h-32 rounded-xl" />
             ))}
           </div>
         </div>
@@ -32,7 +43,7 @@ const OutfitsPage = () => {
 
   const OutfitCard = ({ outfit }: { outfit: any }) => (
     <Card 
-      className="cursor-pointer hover:bg-accent transition-colors"
+      className="group cursor-pointer hover:shadow-card transition-all duration-300 bg-gradient-card border-0 hover:scale-105"
       onClick={() => navigate(`/outfits/detail/${outfit.id}`)}
     >
       <CardContent className="p-4">
@@ -95,69 +106,136 @@ const OutfitsPage = () => {
   );
 
   return (
-    <div className="space-y-4 pb-6">
-      <div className="px-4 pt-6">
-        <h1 className="text-2xl font-bold mb-4">Your Outfits</h1>
+    <div className="space-y-6 pb-6 animate-fade-in">
+      {/* Hero Header */}
+      <div className="relative px-4 pt-8 pb-6 bg-gradient-hero rounded-b-[2rem] shadow-elegant">
+        <div className="text-center text-white space-y-3">
+          <div className="flex justify-center items-center gap-2 mb-2">
+            <Sparkles className="h-6 w-6 text-pink-200 animate-pulse" />
+            <h1 className="text-3xl font-bold">{getFirstName()}'s Outfits</h1>
+            <Star className="h-6 w-6 text-yellow-200 animate-pulse" />
+          </div>
+          <p className="text-purple-100 text-lg font-medium">Your Style Combinations</p>
+          <p className="text-purple-200 text-sm max-w-xs mx-auto">
+            {outfits.length} amazing outfits created with style ✨
+          </p>
+        </div>
         
+        {/* Floating decorative elements */}
+        <div className="absolute top-4 left-4 w-4 h-4 bg-white/20 rounded-full animate-float" />
+        <div className="absolute top-8 right-6 w-3 h-3 bg-pink-300/30 rounded-full animate-float" style={{ animationDelay: '1s' }} />
+        <div className="absolute bottom-4 left-8 w-2 h-2 bg-yellow-300/40 rounded-full animate-float" style={{ animationDelay: '2s' }} />
+      </div>
+      
+      <div className="px-4 space-y-6">
         <Tabs defaultValue="all">
-          <TabsList className="w-full">
-            <TabsTrigger value="all" className="flex-1">All ({outfits.length})</TabsTrigger>
-            <TabsTrigger value="saved" className="flex-1">Saved ({savedOutfits.length})</TabsTrigger>
-            <TabsTrigger value="recent" className="flex-1">Recent</TabsTrigger>
+          <TabsList className="w-full bg-gradient-card border-0 shadow-sm h-auto p-1">
+            <TabsTrigger value="all" className="flex-1 data-[state=active]:bg-gradient-primary data-[state=active]:text-white rounded-lg transition-all duration-300">
+              All ({outfits.length})
+            </TabsTrigger>
+            <TabsTrigger value="saved" className="flex-1 data-[state=active]:bg-gradient-primary data-[state=active]:text-white rounded-lg transition-all duration-300">
+              Saved ({savedOutfits.length})
+            </TabsTrigger>
+            <TabsTrigger value="recent" className="flex-1 data-[state=active]:bg-gradient-primary data-[state=active]:text-white rounded-lg transition-all duration-300">
+              Recent
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="all" className="mt-4 space-y-4 px-0">
-            <div className="space-y-4 px-4">
-              {outfits.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">
-                    No outfits created yet. Create your first outfit!
-                  </p>
+          <TabsContent value="all" className="mt-6 space-y-4">
+            {outfits.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-20 h-20 bg-gradient-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <TrendingUp className="h-10 w-10 text-primary" />
                 </div>
-              ) : (
-                outfits.map(outfit => (
-                  <OutfitCard key={outfit.id} outfit={outfit} />
-                ))
-              )}
-            </div>
+                <p className="text-muted-foreground text-lg font-medium">
+                  Ready to create your first outfit?
+                </p>
+                <p className="text-muted-foreground text-sm mt-2">
+                  Combine your wardrobe items into stunning outfits
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {outfits.map((outfit, index) => (
+                  <div 
+                    key={outfit.id}
+                    className="animate-slide-up"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    <OutfitCard outfit={outfit} />
+                  </div>
+                ))}
+              </div>
+            )}
           </TabsContent>
           
-          <TabsContent value="saved" className="mt-4 space-y-4 px-0">
-            <div className="space-y-4 px-4">
-              {savedOutfits.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">
-                    No saved outfits yet. Mark outfits as favorites!
-                  </p>
+          <TabsContent value="saved" className="mt-6 space-y-4">
+            {savedOutfits.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-20 h-20 bg-gradient-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Heart className="h-10 w-10 text-primary" />
                 </div>
-              ) : (
-                savedOutfits.map(outfit => (
-                  <OutfitCard key={outfit.id} outfit={outfit} />
-                ))
-              )}
-            </div>
+                <p className="text-muted-foreground text-lg font-medium">
+                  No saved outfits yet
+                </p>
+                <p className="text-muted-foreground text-sm mt-2">
+                  Mark your favorite outfits with a heart
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {savedOutfits.map((outfit, index) => (
+                  <div 
+                    key={outfit.id}
+                    className="animate-slide-up"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    <OutfitCard outfit={outfit} />
+                  </div>
+                ))}
+              </div>
+            )}
           </TabsContent>
           
-          <TabsContent value="recent" className="mt-4 space-y-4 px-0">
-            <div className="space-y-4 px-4">
-              {recentOutfits.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">
-                    No recent outfits to show.
-                  </p>
+          <TabsContent value="recent" className="mt-6 space-y-4">
+            {recentOutfits.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="w-20 h-20 bg-gradient-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Sparkles className="h-10 w-10 text-primary" />
                 </div>
-              ) : (
-                recentOutfits.map(outfit => (
-                  <OutfitCard key={outfit.id} outfit={outfit} />
-                ))
-              )}
-            </div>
+                <p className="text-muted-foreground text-lg font-medium">
+                  No recent outfits to show
+                </p>
+                <p className="text-muted-foreground text-sm mt-2">
+                  Create some outfits to see them here
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {recentOutfits.map((outfit, index) => (
+                  <div 
+                    key={outfit.id}
+                    className="animate-slide-up"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    <OutfitCard outfit={outfit} />
+                  </div>
+                ))}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
 
-      <div className="flex justify-center pt-2">
-        <Button onClick={() => navigate('/outfits/create')}>+ Create New Outfit</Button>
+      {/* Action Button */}
+      <div className="flex justify-center pt-4 px-4">
+        <Button 
+          onClick={() => navigate('/outfits/create')}
+          className="w-full max-w-xs bg-gradient-primary hover:shadow-elegant transition-all duration-300 border-0 shadow-lg"
+        >
+          <TrendingUp className="h-4 w-4 mr-2" />
+          Create New Outfit
+        </Button>
       </div>
     </div>
   );

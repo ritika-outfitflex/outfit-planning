@@ -5,12 +5,14 @@ import { Shirt, Plus, Sparkles, TrendingUp, Heart, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useClothingItems } from '@/hooks/useClothingItems';
 import { useOutfits } from '@/hooks/useOutfits';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import WelcomeCharacter from '@/components/Fashion/WelcomeCharacter';
 
 const Index = () => {
   const navigate = useNavigate();
   const { items } = useClothingItems();
   const { outfits } = useOutfits();
+  const { getFirstName } = useUserProfile();
   const [showWelcome, setShowWelcome] = useState(true);
   const [isFirstVisit, setIsFirstVisit] = useState(false);
 
@@ -44,7 +46,7 @@ const Index = () => {
             </div>
             <p className="text-purple-100 text-lg font-medium">Your Personal Style Companion</p>
             <p className="text-purple-200 text-sm max-w-xs mx-auto">
-              Discover perfect outfits with AI-powered styling magic ✨
+              Hey {getFirstName()}! Discover perfect outfits with AI-powered styling magic ✨
             </p>
           </div>
           

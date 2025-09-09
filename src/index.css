@@ -129,19 +129,23 @@
 
 @layer components {
   .bottom-nav {
-    @apply fixed bottom-0 left-0 right-0 bg-background border-t border-border h-16 flex items-center justify-around max-w-md mx-auto;
+    @apply fixed bottom-0 left-0 right-0 bg-gradient-card border-t border-primary/20 h-16 flex items-center justify-around max-w-md mx-auto shadow-elegant backdrop-blur-sm;
   }
 
   .bottom-nav-item {
-    @apply flex flex-col items-center justify-center px-3 py-1 text-xs;
+    @apply flex flex-col items-center justify-center px-3 py-1 text-xs transition-all duration-300 hover:scale-105;
   }
 
   .bottom-nav-item.active {
-    @apply text-outfit-primary;
+    @apply text-primary scale-110;
+  }
+
+  .bottom-nav-item.active .bottom-nav-icon {
+    @apply animate-bounce-in;
   }
 
   .bottom-nav-icon {
-    @apply mb-1 h-5 w-5;
+    @apply mb-1 h-5 w-5 transition-all duration-300;
   }
 
   .page-title {

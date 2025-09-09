@@ -3,14 +3,19 @@ import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Settings, LogOut } from 'lucide-react';
+import { Settings, LogOut, Sparkles, Heart, Star } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useClothingItems } from '@/hooks/useClothingItems';
+import { useOutfits } from '@/hooks/useOutfits';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { useToast } from '@/hooks/use-toast';
+import EditProfileDialog from './EditProfileDialog';
 
 const UserProfile: React.FC = () => {
   const { user, signOut } = useAuth();
   const { items } = useClothingItems();
+  const { outfits } = useOutfits();
+  const { profile, getDisplayName, getFirstName } = useUserProfile();
   const { toast } = useToast();
 
   const handleSignOut = async () => {
@@ -29,68 +34,105 @@ const UserProfile: React.FC = () => {
     }
   };
 
-  const totalOutfits = Math.floor(items.length / 3); // Mock calculation
   const favoriteItems = items.filter(item => item.is_favorite).length;
 
   return (
-    <div className="p-4 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Profile</h1>
-        <Button variant="ghost" size="icon">
-          <Settings className="h-5 w-5" />
-          <span className="sr-only">Settings</span>
-        </Button>
-      </div>
-      
-      <Card>
-        <CardContent className="p-6 flex items-center space-x-4">
-          <Avatar className="h-16 w-16">
-            <AvatarImage src="/placeholder.svg" alt="User" />
-            <AvatarFallback>
-              {user?.email?.substring(0, 2).toUpperCase() || 'UN'}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <h2 className="font-semibold text-lg">Fashion Enthusiast</h2>
-            <p className="text-sm text-muted-foreground">{user?.email}</p>
+    <div className="space-y-6 pb-6 animate-fade-in">
+      {/* Hero Header */}
+      <div className="relative px-4 pt-8 pb-6 bg-gradient-hero rounded-b-[2rem] shadow-elegant">
+        <div className="text-center text-white space-y-3">
+          <div className="flex justify-center items-center gap-2 mb-4">
+            <Star className="h-6 w-6 text-yellow-200 animate-pulse" />
+            <h1 className="text-3xl font-bold">Hey {getFirstName()}!</h1>
+            <Heart className="h-6 w-6 text-pink-200 animate-pulse" />
           </div>
-        </CardContent>
-      </Card>
-      
-      <div className="space-y-1">
-        <h3 className="font-medium">Your Stats</h3>
-        <div className="grid grid-cols-3 gap-3">
-          <Card>
-            <CardContent className="p-3 text-center">
-              <h4 className="text-2xl font-semibold text-outfit-primary">{items.length}</h4>
-              <p className="text-xs text-muted-foreground">Items</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-3 text-center">
-              <h4 className="text-2xl font-semibold text-outfit-primary">{totalOutfits}</h4>
-              <p className="text-xs text-muted-foreground">Outfits</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-3 text-center">
-              <h4 className="text-2xl font-semibold text-outfit-primary">{favoriteItems}</h4>
-              <p className="text-xs text-muted-foreground">Favorites</p>
-            </CardContent>
-          </Card>
+          <p className="text-purple-100 text-lg font-medium">Your Style Profile</p>
         </div>
+        
+        {/* Floating decorative elements */}
+        <div className="absolute top-4 left-4 w-4 h-4 bg-white/20 rounded-full animate-float" />
+        <div className="absolute top-8 right-6 w-3 h-3 bg-pink-300/30 rounded-full animate-float" style={{ animationDelay: '1s' }} />
+        <div className="absolute bottom-4 left-8 w-2 h-2 bg-yellow-300/40 rounded-full animate-float" style={{ animationDelay: '2s' }} />
       </div>
+      
+      <div className="px-4 space-y-6">
+        {/* Profile Card */}
+        <Card className="bg-gradient-card border-0 shadow-card">
+          <CardContent className="p-6 flex items-center space-x-4">
+            <div className="relative">
+              <Avatar className="h-20 w-20 ring-4 ring-primary/20">
+                <AvatarImage src={profile?.avatar_url || "/placeholder.svg"} alt="User" />
+                <AvatarFallback className="bg-gradient-primary text-white text-lg font-bold">
+                  {getDisplayName().substring(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-primary rounded-full flex items-center justify-center">
+                <Sparkles className="h-3 w-3 text-white" />
+              </div>
+            </div>
+            <div className="flex-1">
+              <h2 className="font-bold text-xl text-foreground">{getDisplayName()}</h2>
+              <p className="text-sm text-muted-foreground">{user?.email}</p>
+              <div className="mt-2">
+                <span className="text-xs bg-gradient-primary text-white px-2 py-1 rounded-full">
+                  Style Enthusiast
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Stats Section */}
+        <div className="space-y-3">
+          <h3 className="font-semibold text-lg flex items-center gap-2">
+            <div className="w-2 h-2 bg-gradient-primary rounded-full animate-pulse" />
+            Your Fashion Stats
+          </h3>
+          <div className="grid grid-cols-3 gap-4">
+            <Card className="group hover:shadow-card transition-all duration-300 bg-gradient-card border-0 hover:scale-105">
+              <CardContent className="p-4 text-center space-y-2">
+                <h4 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">{items.length}</h4>
+                <p className="text-xs text-muted-foreground font-medium">Fashion Items</p>
+                <div className="h-1 w-full bg-gradient-primary rounded-full opacity-30" />
+              </CardContent>
+            </Card>
+            
+            <Card className="group hover:shadow-card transition-all duration-300 bg-gradient-card border-0 hover:scale-105">
+              <CardContent className="p-4 text-center space-y-2">
+                <h4 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">{outfits.length}</h4>
+                <p className="text-xs text-muted-foreground font-medium">Style Combos</p>
+                <div className="h-1 w-full bg-gradient-secondary rounded-full opacity-30" />
+              </CardContent>
+            </Card>
+            
+            <Card className="group hover:shadow-card transition-all duration-300 bg-gradient-card border-0 hover:scale-105">
+              <CardContent className="p-4 text-center space-y-2">
+                <h4 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">{favoriteItems}</h4>
+                <p className="text-xs text-muted-foreground font-medium">Favorites</p>
+                <div className="h-1 w-full bg-gradient-primary rounded-full opacity-30" />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
 
-      <div className="space-y-3">
-        <Button className="w-full" variant="default">Edit Profile</Button>
-        <Button 
-          className="w-full" 
-          variant="outline"
-          onClick={handleSignOut}
-        >
-          <LogOut className="h-4 w-4 mr-2" />
-          Sign Out
-        </Button>
+        {/* Action Buttons */}
+        <div className="space-y-3 pt-4">
+          <EditProfileDialog>
+            <Button className="w-full bg-gradient-primary hover:shadow-elegant transition-all duration-300 border-0 shadow-lg">
+              <Settings className="h-4 w-4 mr-2" />
+              Edit Profile
+            </Button>
+          </EditProfileDialog>
+          
+          <Button 
+            className="w-full border-2 border-primary/30 hover:bg-primary hover:text-white transition-all duration-300"
+            variant="outline"
+            onClick={handleSignOut}
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign Out
+          </Button>
+        </div>
       </div>
     </div>
   );
