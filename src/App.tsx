@@ -17,6 +17,7 @@ import ItemDetail from "./pages/ItemDetail";
 import CreateOutfit from "./pages/CreateOutfit";
 import OutfitDetail from "./pages/OutfitDetail";
 import OutfitSuggestions from "./pages/OutfitSuggestions";
+import WeatherOutfits from "./pages/WeatherOutfits";
 import Calendar from "./pages/Calendar";
 import Auth from "./pages/Auth";
 
@@ -44,6 +45,7 @@ const App = () => (
               <Route path="outfits/create" element={<CreateOutfit />} />
               <Route path="outfits/detail/:id" element={<OutfitDetail />} />
               <Route path="outfits/suggestions" element={<OutfitSuggestions />} />
+              <Route path="weather-outfits" element={<WeatherOutfits />} />
               <Route path="calendar" element={<Calendar />} />
               <Route path="profile" element={<Profile />} />
             </Route>

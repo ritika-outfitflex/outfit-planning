@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, User, Search, Bookmark } from 'lucide-react';
+import { Home, User, Search, Bookmark, CloudSun } from 'lucide-react';
 
 const BottomNav: React.FC = () => {
   return (
@@ -33,6 +33,15 @@ const BottomNav: React.FC = () => {
       >
         <Bookmark className="bottom-nav-icon" />
         <span>Outfits</span>
+      </NavLink>
+      <NavLink 
+        to="/weather-outfits" 
+        className={({isActive}) => 
+          `bottom-nav-item ${isActive ? 'active' : ''}`
+        }
+      >
+        <CloudSun className="bottom-nav-icon" />
+        <span>Weather</span>
       </NavLink>
       <NavLink 
         to="/profile" 

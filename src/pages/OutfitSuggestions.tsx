@@ -19,16 +19,9 @@ const OutfitSuggestionsPage = () => {
   const { suggestions, loading, generateSuggestions, saveOutfit } = useOutfitSuggestions();
   const { toast } = useToast();
 
-  // Auto-detect current season
+  // Set default season to fall
   useEffect(() => {
-    const currentMonth = new Date().getMonth();
-    let currentSeason = '';
-    if (currentMonth >= 2 && currentMonth <= 4) currentSeason = 'spring';
-    else if (currentMonth >= 5 && currentMonth <= 7) currentSeason = 'summer';
-    else if (currentMonth >= 8 && currentMonth <= 10) currentSeason = 'fall';
-    else currentSeason = 'winter';
-    
-    setSeason(currentSeason);
+    setSeason('fall');
   }, []);
 
   const handleGenerateSuggestions = async () => {
