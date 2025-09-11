@@ -15,6 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import ColorDetectionPreview from '@/components/ColorDetectionPreview';
 import { MultiSelect } from '@/components/MultiSelect';
+import { getRandomMessage } from '@/utils/loadingMessages';
 
 interface AddItemPageProps {
   editItem?: any;
@@ -38,6 +39,7 @@ const AddItemPage = ({ editItem, onSave }: AddItemPageProps) => {
   const [colorDetectionResult, setColorDetectionResult] = useState<any>(null);
   const [uploading, setUploading] = useState(false);
   const [generatingDescription, setGeneratingDescription] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState('');
 
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -187,6 +189,7 @@ const AddItemPage = ({ editItem, onSave }: AddItemPageProps) => {
     }
 
     setUploading(true);
+    setUploadMessage(getRandomMessage('save'));
     
     try {
       let imageUrl = editItem?.image_url || '';
@@ -241,12 +244,14 @@ const AddItemPage = ({ editItem, onSave }: AddItemPageProps) => {
   };
 
   return (
-    <div className="p-4 space-y-6 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-outfit-primary/5 to-outfit-secondary/5 p-4 space-y-6 pb-20">
       <div className="flex items-center justify-between">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-xl font-bold">{editItem ? 'Edit Item' : 'Add Item'}</h1>
+        <h1 className="text-xl font-bold bg-gradient-to-r from-outfit-primary to-outfit-secondary bg-clip-text text-transparent">
+          {editItem ? 'Edit Item' : 'Add Item'}
+        </h1>
         <div className="w-10" />
       </div>
 
@@ -255,7 +260,7 @@ const AddItemPage = ({ editItem, onSave }: AddItemPageProps) => {
           <label className="text-sm font-medium mb-2 block">Photo</label>
           <div className="space-y-4">
             <Card 
-              className="border-2 border-dashed cursor-pointer hover:bg-accent/50 transition-colors"
+              className="border-2 border-dashed cursor-pointer hover:bg-accent/50 transition-all interactive-card"
               onClick={() => document.getElementById('file-input')?.click()}
             >
               <CardContent className="p-6 text-center">
@@ -301,12 +306,13 @@ const AddItemPage = ({ editItem, onSave }: AddItemPageProps) => {
           </div>
 
           {isProcessing && (
-            <div className="space-y-2">
+            <div className="space-y-3 p-4 bg-gradient-to-r from-outfit-primary/10 to-outfit-secondary/10 rounded-lg">
               <div className="flex items-center gap-2">
-                <Palette className="h-4 w-4" />
-                <span className="text-sm">Processing image...</span>
+                <Palette className="h-4 w-4 text-outfit-primary animate-pulse" />
+                <span className="text-sm font-medium text-outfit-primary">{getRandomMessage('colors')}</span>
               </div>
               <Progress value={progress} className="w-full" />
+              <p className="text-xs text-muted-foreground">{getRandomMessage('upload')}</p>
             </div>
           )}
 
@@ -424,10 +430,17 @@ const AddItemPage = ({ editItem, onSave }: AddItemPageProps) => {
 
         <Button 
           type="submit" 
-          className="w-full" 
+          className="w-full interactive-card" 
           disabled={uploading || !name.trim() || !category}
         >
-          {uploading ? `${editItem ? 'Updating' : 'Adding'} Item...` : `${editItem ? 'Update' : 'Add to'} Wardrobe`}
+          {uploading ? (
+            <div className="flex flex-col items-center space-y-1">
+              <span>{editItem ? 'Updating' : 'Adding'} Item...</span>
+              <span className="text-xs opacity-75">{uploadMessage}</span>
+            </div>
+          ) : (
+            `${editItem ? 'Update' : 'Add to'} Wardrobe`
+          )}
         </Button>
       </form>
     </div>

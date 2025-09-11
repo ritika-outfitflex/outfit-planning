@@ -8,12 +8,14 @@ import { Sparkles, Save, RefreshCw, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useOutfitSuggestions } from '@/hooks/useOutfitSuggestions';
 import { useToast } from '@/hooks/use-toast';
+import { getRandomMessage } from '@/utils/loadingMessages';
 
 const OutfitSuggestionsPage = () => {
   const [occasion, setOccasion] = useState('');
   const [weather, setWeather] = useState('');
   const [season, setSeason] = useState('');
   const [style, setStyle] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('');
   
   const navigate = useNavigate();
   const { suggestions, loading, generateSuggestions, saveOutfit } = useOutfitSuggestions();
@@ -21,6 +23,7 @@ const OutfitSuggestionsPage = () => {
 
 
   const handleGenerateSuggestions = async () => {
+    setLoadingMessage(getRandomMessage('outfit'));
     await generateSuggestions({
       occasion: occasion || undefined,
       weather: weather || undefined,
@@ -46,16 +49,18 @@ const OutfitSuggestionsPage = () => {
   };
 
   return (
-    <div className="p-4 space-y-6 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-outfit-primary/5 to-outfit-secondary/5 p-4 space-y-6 pb-20">
       <div className="flex items-center justify-between">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-xl font-bold">Outfit Suggestions</h1>
+        <h1 className="text-xl font-bold bg-gradient-to-r from-outfit-primary to-outfit-secondary bg-clip-text text-transparent">
+          Outfit Suggestions
+        </h1>
         <div className="w-10" />
       </div>
 
-      <Card>
+      <Card className="border-0 shadow-elegant backdrop-blur-sm bg-white/80 interactive-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5" />
@@ -137,10 +142,10 @@ const OutfitSuggestionsPage = () => {
             disabled={loading}
           >
             {loading ? (
-              <>
-                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                Generating...
-              </>
+              <div className="flex flex-col items-center space-y-1">
+                <RefreshCw className="h-4 w-4 animate-spin" />
+                <span className="text-xs">{loadingMessage}</span>
+              </div>
             ) : (
               <>
                 <Sparkles className="h-4 w-4 mr-2" />
@@ -155,7 +160,7 @@ const OutfitSuggestionsPage = () => {
         <div className="space-y-4">
           <h2 className="text-lg font-semibold">Suggested Outfits</h2>
           {suggestions.map((suggestion, index) => (
-            <Card key={index}>
+            <Card key={index} className="border-0 shadow-elegant backdrop-blur-sm bg-white/80 interactive-card animate-fade-in">
               <CardContent className="p-4">
                 <div className="flex justify-between items-start mb-3">
                   <div>

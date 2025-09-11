@@ -6,6 +6,7 @@ import { CloudSun, Save, RefreshCw, ArrowLeft, MapPin, Thermometer } from 'lucid
 import { useNavigate } from 'react-router-dom';
 import { useOutfitSuggestions } from '@/hooks/useOutfitSuggestions';
 import { useToast } from '@/hooks/use-toast';
+import { getRandomMessage } from '@/utils/loadingMessages';
 
 interface WeatherData {
   temperature: number;
@@ -18,6 +19,7 @@ const WeatherOutfitsPage = () => {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingWeather, setLoadingWeather] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
   
   const navigate = useNavigate();
   const { suggestions, loading: suggestionsLoading, generateSuggestions, saveOutfit } = useOutfitSuggestions();
@@ -96,6 +98,7 @@ const WeatherOutfitsPage = () => {
     if (!weatherData) return;
     
     setLoading(true);
+    setLoadingMessage(getRandomMessage('weather'));
     const currentSeason = getCurrentSeason();
     
     await generateSuggestions({
@@ -143,7 +146,7 @@ const WeatherOutfitsPage = () => {
       </div>
 
       {/* Weather Card */}
-      <Card className="border-0 shadow-elegant backdrop-blur-sm bg-white/80">
+      <Card className="border-0 shadow-elegant backdrop-blur-sm bg-white/80 interactive-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CloudSun className="h-5 w-5 text-outfit-primary" />
@@ -152,8 +155,9 @@ const WeatherOutfitsPage = () => {
         </CardHeader>
         <CardContent>
           {loadingWeather ? (
-            <div className="flex items-center justify-center py-8">
+            <div className="flex flex-col items-center justify-center py-8 space-y-3">
               <RefreshCw className="h-6 w-6 animate-spin text-outfit-primary" />
+              <p className="text-sm text-outfit-primary animate-pulse">{getRandomMessage('general')}</p>
             </div>
           ) : weatherData ? (
             <div className="space-y-4">
@@ -181,14 +185,14 @@ const WeatherOutfitsPage = () => {
 
               <Button 
                 onClick={handleGenerateWeatherSuggestions} 
-                className="w-full"
+                className="w-full interactive-card"
                 disabled={loading || suggestionsLoading}
               >
                 {loading || suggestionsLoading ? (
-                  <>
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    Generating...
-                  </>
+                  <div className="flex flex-col items-center space-y-1">
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                    <span className="text-xs">{loadingMessage}</span>
+                  </div>
                 ) : (
                   <>
                     <CloudSun className="h-4 w-4 mr-2" />
@@ -215,7 +219,7 @@ const WeatherOutfitsPage = () => {
             Weather-Perfect Outfits
           </h2>
           {suggestions.map((suggestion, index) => (
-            <Card key={index} className="border-0 shadow-elegant backdrop-blur-sm bg-white/80">
+            <Card key={index} className="border-0 shadow-elegant backdrop-blur-sm bg-white/80 interactive-card animate-fade-in">
               <CardContent className="p-4">
                 <div className="flex justify-between items-start mb-3">
                   <div>

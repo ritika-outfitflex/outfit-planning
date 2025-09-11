@@ -10,6 +10,7 @@ import { ArrowLeft, Check } from 'lucide-react';
 import { useClothingItems } from '@/hooks/useClothingItems';
 import { useOutfits } from '@/hooks/useOutfits';
 import { useToast } from '@/hooks/use-toast';
+import { getRandomMessage } from '@/utils/loadingMessages';
 
 const CreateOutfitPage = () => {
   const [name, setName] = useState('');
@@ -19,6 +20,7 @@ const CreateOutfitPage = () => {
   const [weather, setWeather] = useState('');
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
   
   const navigate = useNavigate();
   const { items } = useClothingItems();
@@ -45,6 +47,7 @@ const CreateOutfitPage = () => {
     }
 
     setLoading(true);
+    setLoadingMessage(getRandomMessage('outfit'));
     try {
       await createOutfit({
         name: name.trim(),
@@ -74,12 +77,14 @@ const CreateOutfitPage = () => {
   };
 
   return (
-    <div className="p-4 space-y-6 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-outfit-primary/5 to-outfit-secondary/5 p-4 space-y-6 pb-20">
       <div className="flex items-center justify-between">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-xl font-bold">Create Outfit</h1>
+        <h1 className="text-xl font-bold bg-gradient-to-r from-outfit-primary to-outfit-secondary bg-clip-text text-transparent">
+          Create Outfit
+        </h1>
         <div className="w-10" />
       </div>
 
@@ -168,10 +173,10 @@ const CreateOutfitPage = () => {
               {items.map(item => (
                 <Card 
                   key={item.id}
-                  className={`cursor-pointer transition-all ${
+                  className={`cursor-pointer transition-all interactive-card ${
                     selectedItems.includes(item.id) 
-                      ? 'ring-2 ring-outfit-primary bg-outfit-primary/5' 
-                      : 'hover:bg-accent'
+                      ? 'ring-2 ring-outfit-primary bg-gradient-to-br from-outfit-primary/10 to-outfit-secondary/10 shadow-glow' 
+                      : 'hover:bg-accent hover:shadow-elegant'
                   }`}
                   onClick={() => handleItemToggle(item.id)}
                 >
@@ -208,10 +213,17 @@ const CreateOutfitPage = () => {
 
         <Button 
           type="submit" 
-          className="w-full" 
+          className="w-full interactive-card" 
           disabled={loading || !name.trim()}
         >
-          {loading ? 'Creating...' : 'Create Outfit'}
+          {loading ? (
+            <div className="flex flex-col items-center space-y-1">
+              <span>Creating...</span>
+              <span className="text-xs opacity-75">{loadingMessage}</span>
+            </div>
+          ) : (
+            'Create Outfit'
+          )}
         </Button>
       </form>
     </div>
