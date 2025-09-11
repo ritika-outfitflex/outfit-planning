@@ -19,10 +19,6 @@ const OutfitSuggestionsPage = () => {
   const { suggestions, loading, generateSuggestions, saveOutfit } = useOutfitSuggestions();
   const { toast } = useToast();
 
-  // Set default season to fall
-  useEffect(() => {
-    setSeason('fall');
-  }, []);
 
   const handleGenerateSuggestions = async () => {
     await generateSuggestions({
