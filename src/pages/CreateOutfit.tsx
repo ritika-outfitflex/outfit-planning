@@ -11,6 +11,7 @@ import { useClothingItems } from '@/hooks/useClothingItems';
 import { useOutfits } from '@/hooks/useOutfits';
 import { useToast } from '@/hooks/use-toast';
 import { getRandomMessage } from '@/utils/loadingMessages';
+import FashionAvatar from '@/components/Fashion/FashionAvatar';
 
 const CreateOutfitPage = () => {
   const [name, setName] = useState('');
@@ -21,6 +22,8 @@ const CreateOutfitPage = () => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
+  const [showAvatar, setShowAvatar] = useState(false);
+  const [avatarMessage, setAvatarMessage] = useState('');
   
   const navigate = useNavigate();
   const { items } = useClothingItems();
@@ -35,6 +38,31 @@ const CreateOutfitPage = () => {
     );
   };
 
+  const generateAIDescriptions = async (selectedItemsData: any[]) => {
+    try {
+      const response = await fetch('https://kicpepyarfiorraejwqh.functions.supabase.co/functions/v1/outfit-description', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          items: selectedItemsData,
+          occasion,
+          weather,
+          season
+        })
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        return result;
+      }
+    } catch (error) {
+      console.error('Error generating AI descriptions:', error);
+    }
+    return null;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
@@ -46,24 +74,78 @@ const CreateOutfitPage = () => {
       return;
     }
 
+    if (selectedItems.length === 0) {
+      toast({
+        title: "Select items",
+        description: "Please select at least one item for your outfit.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
     setLoadingMessage(getRandomMessage('outfit'));
+    
     try {
+      // Get selected items data for AI
+      const selectedItemsData = items.filter(item => selectedItems.includes(item.id));
+      
+      // Generate AI description and alternatives
+      const aiResult = await generateAIDescriptions(selectedItemsData);
+      
+      // Create main outfit
+      const mainDescription = description.trim() || aiResult?.mainDescription || undefined;
       await createOutfit({
         name: name.trim(),
-        description: description.trim() || undefined,
+        description: mainDescription,
         season: season || undefined,
         occasion: occasion || undefined,
         weather: weather || undefined,
         itemIds: selectedItems
       });
 
+      // Create alternative outfits if suggested by AI
+      if (aiResult?.alternatives && aiResult.alternatives.length > 0) {
+        for (const alt of aiResult.alternatives) {
+          // Find matching items for the alternative
+          const altItemIds = alt.items.map((itemName: string) => {
+            const foundItem = selectedItemsData.find(item => 
+              item.name.toLowerCase().includes(itemName.toLowerCase()) ||
+              itemName.toLowerCase().includes(item.name.toLowerCase())
+            );
+            return foundItem?.id;
+          }).filter(Boolean);
+
+          if (altItemIds.length > 0) {
+            await createOutfit({
+              name: `${name.trim()} - ${alt.name}`,
+              description: alt.description,
+              season: season || undefined,
+              occasion: occasion || undefined,
+              weather: weather || undefined,
+              itemIds: altItemIds
+            });
+          }
+        }
+      }
+
+      // Show success message with avatar
+      setAvatarMessage(aiResult?.alternatives?.length > 0 
+        ? `Stunning! I created ${1 + aiResult.alternatives.length} outfit variations for you! 💅✨`
+        : "Gorgeous outfit created, bestie! You're gonna look amazing! 😍✨"
+      );
+      setShowAvatar(true);
+
       toast({
         title: "Outfit created!",
-        description: "Your new outfit has been saved to your collection."
+        description: aiResult?.alternatives?.length > 0 
+          ? `Created ${1 + aiResult.alternatives.length} outfit variations!`
+          : "Your new outfit has been saved to your collection."
       });
 
-      navigate('/outfits');
+      setTimeout(() => {
+        navigate('/outfits');
+      }, 2000);
     } catch (error) {
       console.error('Error creating outfit:', error);
       toast({
@@ -78,6 +160,13 @@ const CreateOutfitPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-outfit-primary/5 to-outfit-secondary/5 p-4 space-y-6 pb-20">
+      <FashionAvatar 
+        message={avatarMessage}
+        isVisible={showAvatar}
+        onClose={() => setShowAvatar(false)}
+        autoHide={true}
+        duration={3000}
+      />
       <div className="flex items-center justify-between">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />

@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useOutfitSuggestions } from '@/hooks/useOutfitSuggestions';
 import { useToast } from '@/hooks/use-toast';
 import { getRandomMessage } from '@/utils/loadingMessages';
+import FashionAvatar from '@/components/Fashion/FashionAvatar';
 
 interface WeatherData {
   temperature: number;
@@ -20,6 +21,8 @@ const WeatherOutfitsPage = () => {
   const [loading, setLoading] = useState(false);
   const [loadingWeather, setLoadingWeather] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
+  const [showAvatar, setShowAvatar] = useState(false);
+  const [avatarMessage, setAvatarMessage] = useState('');
   
   const navigate = useNavigate();
   const { suggestions, loading: suggestionsLoading, generateSuggestions, saveOutfit } = useOutfitSuggestions();
@@ -50,33 +53,25 @@ const WeatherOutfitsPage = () => {
 
       const { latitude, longitude } = position.coords;
       
-      // Using OpenWeatherMap API (free tier)
-      const API_KEY = 'demo'; // You'll need to get a real API key
-      const response = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&units=metric`
-      );
+      // Call our Supabase edge function for weather
+      const response = await fetch('https://kicpepyarfiorraejwqh.functions.supabase.co/functions/v1/weather-api', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ latitude, longitude })
+      });
       
       if (response.ok) {
         const data = await response.json();
-        setWeatherData({
-          temperature: Math.round(data.main.temp),
-          description: data.weather[0].description,
-          condition: getWeatherCondition(data.weather[0].description),
-          location: data.name
-        });
+        setWeatherData(data);
       } else {
-        // Fallback to mock data for demo
-        setWeatherData({
-          temperature: 18,
-          description: 'partly cloudy',
-          condition: 'cloudy',
-          location: 'Current Location'
-        });
+        throw new Error('Weather API failed');
       }
     } catch (error) {
       // Fallback to mock data
       setWeatherData({
-        temperature: 18,
+        temperature: 22,
         description: 'partly cloudy',
         condition: 'cloudy',
         location: 'Current Location'
@@ -120,14 +115,16 @@ const WeatherOutfitsPage = () => {
   const handleSaveOutfit = async (suggestion: any) => {
     try {
       await saveOutfit(suggestion);
+      setAvatarMessage("Yass! That outfit is now in your collection, bestie! 💖✨");
+      setShowAvatar(true);
       toast({
         title: "Outfit saved!",
-        description: "The weather-appropriate outfit has been added to your collection."
+        description: "Added to your collection 💅"
       });
     } catch (error) {
       toast({
-        title: "Error saving outfit",
-        description: "Please try again.",
+        title: "Error",
+        description: "Failed to save outfit",
         variant: "destructive"
       });
     }
@@ -135,6 +132,13 @@ const WeatherOutfitsPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-outfit-primary/5 to-outfit-secondary/5 p-4 space-y-6 pb-20">
+      <FashionAvatar 
+        message={avatarMessage}
+        isVisible={showAvatar}
+        onClose={() => setShowAvatar(false)}
+        autoHide={true}
+        duration={3000}
+      />
       <div className="flex items-center justify-between">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />

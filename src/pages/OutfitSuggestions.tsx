@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useOutfitSuggestions } from '@/hooks/useOutfitSuggestions';
 import { useToast } from '@/hooks/use-toast';
 import { getRandomMessage } from '@/utils/loadingMessages';
+import FashionAvatar from '@/components/Fashion/FashionAvatar';
 
 const OutfitSuggestionsPage = () => {
   const [occasion, setOccasion] = useState('');
@@ -16,6 +17,8 @@ const OutfitSuggestionsPage = () => {
   const [season, setSeason] = useState('');
   const [style, setStyle] = useState('');
   const [loadingMessage, setLoadingMessage] = useState('');
+  const [showAvatar, setShowAvatar] = useState(false);
+  const [avatarMessage, setAvatarMessage] = useState('');
   
   const navigate = useNavigate();
   const { suggestions, loading, generateSuggestions, saveOutfit } = useOutfitSuggestions();
@@ -35,14 +38,16 @@ const OutfitSuggestionsPage = () => {
   const handleSaveOutfit = async (suggestion: any) => {
     try {
       await saveOutfit(suggestion);
+      setAvatarMessage("Perfect choice, gorgeous! That outfit is absolutely divine! 👑✨");
+      setShowAvatar(true);
       toast({
         title: "Outfit saved!",
-        description: "The suggested outfit has been added to your collection."
+        description: "Added to your collection 💅"
       });
     } catch (error) {
       toast({
-        title: "Error saving outfit",
-        description: "Please try again.",
+        title: "Error",
+        description: "Failed to save outfit",
         variant: "destructive"
       });
     }
@@ -50,6 +55,13 @@ const OutfitSuggestionsPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-outfit-primary/5 to-outfit-secondary/5 p-4 space-y-6 pb-20">
+      <FashionAvatar 
+        message={avatarMessage}
+        isVisible={showAvatar}
+        onClose={() => setShowAvatar(false)}
+        autoHide={true}
+        duration={3000}
+      />
       <div className="flex items-center justify-between">
         <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />
