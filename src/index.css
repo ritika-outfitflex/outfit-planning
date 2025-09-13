@@ -142,55 +142,57 @@
 
   .bottom-nav-item.active .bottom-nav-icon {
     @apply animate-bounce-in;
-        /* Hover Scale Animation */
-        .hover-scale {
-          @apply transition-transform duration-200 hover:scale-105;
-        }
-        
-        /* Pulse Animation */
-        .pulse {
-          @apply animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite];
-        }
+  }
 
-        /* Float Animation */
-        .float {
-          @apply animate-[float_3s_ease-in-out_infinite];
-        }
+  /* Hover Scale Animation */
+  .hover-scale {
+    @apply transition-transform duration-200 hover:scale-105;
+  }
+  
+  /* Pulse Animation */
+  .pulse {
+    @apply animate-[pulse_2s_cubic-bezier(0.4,0,0.6,1)_infinite];
+  }
 
-        /* Bounce Animation */
-        .bounce-gentle {
-          @apply animate-[bounce_2s_infinite];
-        }
+  /* Float Animation */
+  .float {
+    @apply animate-[float_3s_ease-in-out_infinite];
+  }
 
-        /* Shimmer Effect for loading */
-        .shimmer {
-          @apply relative overflow-hidden bg-gradient-to-r from-transparent via-white/10 to-transparent;
-        }
-        
-        .shimmer::before {
-          content: '';
-          @apply absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent;
-          animation: shimmer 2s infinite;
-        }
+  /* Bounce Animation */
+  .bounce-gentle {
+    @apply animate-[bounce_2s_infinite];
+  }
 
-        /* Gradient borders */
-        .gradient-border {
-          @apply border-2 border-transparent bg-gradient-to-r from-outfit-primary to-outfit-secondary bg-clip-border;
-        }
+  /* Shimmer Effect for loading */
+  .shimmer {
+    @apply relative overflow-hidden bg-gradient-to-r from-transparent via-white/10 to-transparent;
+  }
+  
+  .shimmer::before {
+    content: '';
+    @apply absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent;
+    animation: shimmer 2s infinite;
+  }
 
-        /* Interactive cards */
-        .interactive-card {
-          @apply transition-all duration-300 hover:shadow-glow hover:scale-[1.02] hover:-translate-y-1;
-        }
+  /* Gradient borders */
+  .gradient-border {
+    @apply border-2 border-transparent bg-gradient-to-r from-outfit-primary to-outfit-secondary bg-clip-border;
+  }
 
-        /* Fashion-specific animations */
-        .sparkle {
-          @apply animate-[sparkle_1.5s_ease-in-out_infinite];
-        }
+  /* Interactive cards */
+  .interactive-card {
+    @apply transition-all duration-300 hover:shadow-glow hover:scale-[1.02] hover:-translate-y-1;
+  }
 
-        .glow-text {
-          @apply bg-gradient-to-r from-outfit-primary via-outfit-accent to-outfit-secondary bg-clip-text text-transparent animate-[glow_2s_ease-in-out_infinite_alternate];
-        }
+  /* Fashion-specific animations */
+  .sparkle {
+    @apply animate-[sparkle_1.5s_ease-in-out_infinite];
+  }
+
+  .glow-text {
+    @apply bg-gradient-to-r from-outfit-primary via-outfit-accent to-outfit-secondary bg-clip-text text-transparent animate-[glow_2s_ease-in-out_infinite_alternate];
+  }
 
   .bottom-nav-icon {
     @apply mb-1 h-5 w-5 transition-all duration-300;
