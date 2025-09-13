@@ -62,8 +62,8 @@ const FashionAvatar: React.FC<FashionAvatarProps> = ({
   if (!show) return null;
 
   return (
-    <div className="fixed top-4 right-4 z-50 animate-bounce-in">
-      <Card className="relative max-w-xs p-4 bg-gradient-card shadow-glow border-0">
+    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 animate-bounce-in w-[calc(100vw-2rem)] max-w-sm">
+      <Card className="relative p-3 bg-gradient-card shadow-glow border-0">
         <div className="flex items-start space-x-3">
           <div className="relative flex-shrink-0">
             <img

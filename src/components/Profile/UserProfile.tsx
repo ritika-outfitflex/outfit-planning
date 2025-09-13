@@ -61,9 +61,9 @@ const UserProfile: React.FC = () => {
           <CardContent className="p-6 flex items-center space-x-4">
             <div className="relative">
               <Avatar className="h-20 w-20 ring-4 ring-primary/20">
-                <AvatarImage src={profile?.avatar_url || "/placeholder.svg"} alt="User" />
+                <AvatarImage src={profile?.avatar_url || ""} alt="User" />
                 <AvatarFallback className="bg-gradient-primary text-white text-lg font-bold">
-                  {getDisplayName().substring(0, 2).toUpperCase()}
+                  {getDisplayName().split(' ').map(name => name[0]).join('').toUpperCase().slice(0, 2)}
                 </AvatarFallback>
               </Avatar>
               <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-primary rounded-full flex items-center justify-center">

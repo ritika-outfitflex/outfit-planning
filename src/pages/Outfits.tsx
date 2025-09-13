@@ -8,11 +8,20 @@ import { useNavigate } from 'react-router-dom';
 import { useOutfits } from '@/hooks/useOutfits';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { Skeleton } from '@/components/ui/skeleton';
+import FashionAvatar from '@/components/Fashion/FashionAvatar';
 
 const OutfitsPage = () => {
   const navigate = useNavigate();
   const { outfits, loading } = useOutfits();
   const { getFirstName } = useUserProfile();
+  const [showAvatar, setShowAvatar] = React.useState(false);
+
+  React.useEffect(() => {
+    // Show avatar when outfits are loaded and user has outfits
+    if (!loading && outfits.length > 0) {
+      setShowAvatar(true);
+    }
+  }, [loading, outfits.length]);
   
   const savedOutfits = outfits.filter(outfit => outfit.is_favorite);
   const recentOutfits = outfits.slice(0, 5);
@@ -237,6 +246,16 @@ const OutfitsPage = () => {
           Create New Outfit
         </Button>
       </div>
+      
+      {showAvatar && (
+        <FashionAvatar
+          message={`Your ${outfits.length} outfits are looking fire! 🔥✨`}
+          isVisible={showAvatar}
+          onClose={() => setShowAvatar(false)}
+          autoHide={true}
+          duration={3000}
+        />
+      )}
     </div>
   );
 };
