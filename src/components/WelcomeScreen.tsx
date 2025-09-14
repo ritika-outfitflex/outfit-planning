@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import logo from '@/assets/logo.png';
 
 interface WelcomeScreenProps {
@@ -8,182 +9,177 @@ interface WelcomeScreenProps {
 }
 
 const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onComplete }) => {
-  const [showWelcome, setShowWelcome] = useState(true);
-  const [showButton, setShowButton] = useState(false);
-
-  useEffect(() => {
-    // Show the get started button after logo animation
-    const timer = setTimeout(() => {
-      setShowButton(true);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, []);
+  const [stage, setStage] = useState<'welcome' | 'transition' | 'message' | 'complete'>('welcome');
+  const [showMessage, setShowMessage] = useState(false);
 
   const handleGetStarted = () => {
-    setShowWelcome(false);
+    setStage('transition');
     setTimeout(() => {
-      onComplete();
+      setStage('message');
+      setShowMessage(true);
     }, 800);
   };
 
-  const welcomeMessages = [
-    "Welcome to your personal stylist! ✨",
-    "Let's create amazing outfits together! 👗",
-    "Your fashion journey starts here! 🌟",
-    "Ready to look absolutely stunning? 💫"
-  ];
+  const handleMessageComplete = () => {
+    setShowMessage(false);
+    setStage('complete');
+    setTimeout(() => {
+      onComplete();
+    }, 500);
+  };
 
-  const randomMessage = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
+  useEffect(() => {
+    if (stage === 'message') {
+      const timer = setTimeout(() => {
+        handleMessageComplete();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [stage]);
 
   return (
     <AnimatePresence>
-      {showWelcome && (
+      {stage !== 'complete' && (
         <motion.div
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0, scale: 0.8 }}
-          transition={{ duration: 0.8, ease: "easeInOut" }}
-          className="fixed inset-0 z-50 bg-gradient-to-br from-outfit-primary/10 via-white to-outfit-secondary/10 flex flex-col items-center justify-center p-8"
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50"
         >
-          {/* Logo Animation */}
-          <motion.div
-            initial={{ scale: 0.3, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ 
-              duration: 2,
-              ease: "easeOut",
-              type: "spring",
-              stiffness: 100
-            }}
-            className="relative mb-8"
-          >
+          {/* Welcome Stage */}
+          {stage === 'welcome' && (
             <motion.div
-              animate={{ 
-                rotateY: [0, 360],
-                scale: [1, 1.1, 1]
-              }}
-              transition={{ 
-                duration: 3,
-                ease: "easeInOut",
-                repeat: Infinity,
-                repeatDelay: 2
-              }}
-              className="relative"
-            >
-              <img 
-                src={logo} 
-                alt="Fashion App Logo" 
-                className="w-32 h-32 object-contain"
-              />
-              
-              {/* Glow effect */}
-              <motion.div
-                animate={{ 
-                  scale: [1, 1.2, 1],
-                  opacity: [0.3, 0.6, 0.3]
-                }}
-                transition={{ 
-                  duration: 2,
-                  ease: "easeInOut",
-                  repeat: Infinity
-                }}
-                className="absolute inset-0 bg-gradient-primary rounded-full blur-xl -z-10"
-              />
-            </motion.div>
-            
-            {/* Floating particles */}
-            {[...Array(6)].map((_, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0 }}
-                animate={{ 
-                  opacity: [0, 1, 0],
-                  y: [-20, -60],
-                  x: [0, (i % 2 === 0 ? 20 : -20)]
-                }}
-                transition={{
-                  duration: 3,
-                  delay: i * 0.5,
-                  repeat: Infinity,
-                  repeatDelay: 1
-                }}
-                className="absolute w-2 h-2 bg-gradient-primary rounded-full"
-                style={{
-                  top: `${20 + (i * 10)}%`,
-                  left: `${30 + (i * 8)}%`
-                }}
-              />
-            ))}
-          </motion.div>
-
-          {/* Welcome Text */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.5, duration: 1 }}
-            className="text-center mb-8"
-          >
-            <motion.h1 
-              className="text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4"
-              animate={{ 
-                backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"]
-              }}
-              transition={{ 
-                duration: 3,
-                repeat: Infinity,
-                ease: "linear"
-              }}
-            >
-              Style Sync
-            </motion.h1>
-            
-            <motion.p 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 2, duration: 1 }}
-              className="text-lg text-muted-foreground font-medium"
+              exit={{ opacity: 0 }}
+              className="w-full h-full bg-white flex flex-col items-center justify-center p-8"
             >
-              {randomMessage}
-            </motion.p>
-          </motion.div>
-
-          {/* Get Started Button */}
-          <AnimatePresence>
-            {showButton && (
               <motion.div
-                initial={{ opacity: 0, y: 30, scale: 0.8 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ 
-                  duration: 0.8,
-                  type: "spring",
-                  stiffness: 200
-                }}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 1, ease: "easeOut" }}
+                className="mb-16"
+              >
+                <img 
+                  src={logo} 
+                  alt="Fashion App Logo" 
+                  className="w-32 h-32 object-contain"
+                />
+              </motion.div>
+
+              <motion.div
+                initial={{ y: 30, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.8 }}
               >
                 <Button
                   onClick={handleGetStarted}
                   size="lg"
                   className="px-12 py-4 text-lg font-semibold bg-gradient-primary hover:scale-105 transform transition-all duration-300 shadow-glow"
                 >
-                  <motion.span
-                    animate={{ 
-                      textShadow: [
-                        "0 0 0px rgba(255,255,255,0)",
-                        "0 0 10px rgba(255,255,255,0.8)",
-                        "0 0 0px rgba(255,255,255,0)"
-                      ]
-                    }}
-                    transition={{ 
-                      duration: 2,
-                      repeat: Infinity,
-                      ease: "easeInOut"
-                    }}
-                  >
-                    Get Started
-                  </motion.span>
+                  Get Started
                 </Button>
               </motion.div>
-            )}
-          </AnimatePresence>
+            </motion.div>
+          )}
+
+          {/* Transition Stage */}
+          {stage === 'transition' && (
+            <motion.div
+              initial={{ opacity: 1 }}
+              animate={{ opacity: 1 }}
+              className="w-full h-full bg-white flex items-center justify-center"
+            >
+              <motion.img
+                src={logo}
+                alt="Fashion App Logo"
+                initial={{ scale: 1, x: 0, y: 0 }}
+                animate={{ 
+                  scale: 0.3, 
+                  x: -150, 
+                  y: -200 
+                }}
+                transition={{ duration: 0.8, ease: "easeInOut" }}
+                className="w-32 h-32 object-contain"
+              />
+            </motion.div>
+          )}
+
+          {/* Message Stage with Blurred Background */}
+          {stage === 'message' && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="w-full h-full relative"
+            >
+              {/* Blurred background */}
+              <motion.div
+                initial={{ backdropFilter: "blur(0px)" }}
+                animate={{ backdropFilter: "blur(10px)" }}
+                transition={{ duration: 0.5 }}
+                className="absolute inset-0 bg-gradient-to-br from-outfit-primary/20 via-transparent to-outfit-secondary/20"
+              />
+
+              {/* Small logo in corner */}
+              <motion.img
+                src={logo}
+                alt="Fashion App Logo"
+                initial={{ scale: 0.3, x: -150, y: -200 }}
+                animate={{ scale: 0.2, x: -180, y: -250 }}
+                className="absolute top-8 left-8 w-32 h-32 object-contain opacity-60"
+              />
+
+              {/* Popup Message */}
+              <AnimatePresence>
+                {showMessage && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8, y: 50 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.8, y: -50 }}
+                    transition={{ 
+                      duration: 0.6,
+                      type: "spring",
+                      stiffness: 200
+                    }}
+                    className="absolute inset-0 flex items-center justify-center p-8"
+                  >
+                    <Card className="relative p-6 bg-gradient-card shadow-glow border-0 max-w-sm w-full">
+                      <div className="flex items-center space-x-4">
+                        <div className="relative flex-shrink-0">
+                          <div className="w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center">
+                            <motion.div
+                              animate={{ 
+                                rotate: [0, 360]
+                              }}
+                              transition={{ 
+                                duration: 2,
+                                repeat: Infinity,
+                                ease: "linear"
+                              }}
+                              className="text-white text-xl"
+                            >
+                              ✨
+                            </motion.div>
+                          </div>
+                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-primary rounded-full animate-pulse" />
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <motion.p 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.3 }}
+                            className="text-lg font-medium bg-gradient-primary bg-clip-text text-transparent"
+                          >
+                            Let's create some outfits for you! 💫
+                          </motion.p>
+                        </div>
+                      </div>
+                    </Card>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          )}
         </motion.div>
       )}
     </AnimatePresence>
