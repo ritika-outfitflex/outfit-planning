@@ -1,12 +1,14 @@
 
+import React, { useState, useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MobileLayout from "./components/Layout/MobileLayout";
+import WelcomeScreen from "./components/WelcomeScreen";
 import Index from "./pages/Index";
 import Wardrobe from "./pages/Wardrobe";
 import Outfits from "./pages/Outfits";
@@ -23,6 +25,52 @@ import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient();
 
+const AppContent = () => {
+  const { user } = useAuth();
+  const [showWelcome, setShowWelcome] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
+      if (!hasSeenWelcome) {
+        setShowWelcome(true);
+      }
+    }
+  }, [user]);
+
+  const handleWelcomeComplete = () => {
+    localStorage.setItem('hasSeenWelcome', 'true');
+    setShowWelcome(false);
+  };
+
+  return (
+    <>
+      {showWelcome && <WelcomeScreen onComplete={handleWelcomeComplete} />}
+      <Routes>
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/" element={
+          <ProtectedRoute>
+            <MobileLayout />
+          </ProtectedRoute>
+        }>
+          <Route index element={<Index />} />
+          <Route path="wardrobe" element={<Wardrobe />} />
+          <Route path="wardrobe/add" element={<AddItem />} />
+          <Route path="wardrobe/item/:id" element={<ItemDetail />} />
+          <Route path="outfits" element={<Outfits />} />
+          <Route path="outfits/create" element={<CreateOutfit />} />
+          <Route path="outfits/detail/:id" element={<OutfitDetail />} />
+          <Route path="outfits/suggestions" element={<OutfitSuggestions />} />
+          <Route path="weather-outfits" element={<WeatherOutfits />} />
+          <Route path="calendar" element={<Calendar />} />
+          <Route path="profile" element={<Profile />} />
+        </Route>
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -30,27 +78,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/" element={
-              <ProtectedRoute>
-                <MobileLayout />
-              </ProtectedRoute>
-            }>
-              <Route index element={<Index />} />
-              <Route path="wardrobe" element={<Wardrobe />} />
-              <Route path="wardrobe/add" element={<AddItem />} />
-              <Route path="wardrobe/item/:id" element={<ItemDetail />} />
-              <Route path="outfits" element={<Outfits />} />
-              <Route path="outfits/create" element={<CreateOutfit />} />
-              <Route path="outfits/detail/:id" element={<OutfitDetail />} />
-              <Route path="outfits/suggestions" element={<OutfitSuggestions />} />
-              <Route path="weather-outfits" element={<WeatherOutfits />} />
-              <Route path="calendar" element={<Calendar />} />
-              <Route path="profile" element={<Profile />} />
-            </Route>
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <AppContent />
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>

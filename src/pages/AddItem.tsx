@@ -299,10 +299,33 @@ const AddItemPage = ({ editItem, onSave }: AddItemPageProps) => {
               id="file-input"
               type="file"
               accept="image/*"
-              capture="environment"
               onChange={handleFileSelect}
               className="hidden"
             />
+            
+            {/* Camera option */}
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full mt-2"
+              onClick={() => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.capture = 'environment';
+                input.onchange = (e) => {
+                  const file = (e.target as HTMLInputElement).files?.[0];
+                  if (file) {
+                    setSelectedFile(file);
+                    handleFileSelect({ target: { files: [file] } } as any);
+                  }
+                };
+                input.click();
+              }}
+            >
+              <Camera className="h-4 w-4 mr-2" />
+              Take Photo
+            </Button>
           </div>
 
           {isProcessing && (
