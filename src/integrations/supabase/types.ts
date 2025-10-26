@@ -28,9 +28,11 @@ export type Database = {
           name: string
           notes: string | null
           occasions: string[] | null
+          pattern: string | null
           purchase_date: string | null
           seasons: string[] | null
           size: string | null
+          style_tags: string[] | null
           subcategory: string | null
           tags: string[] | null
           times_worn: number
@@ -50,9 +52,11 @@ export type Database = {
           name: string
           notes?: string | null
           occasions?: string[] | null
+          pattern?: string | null
           purchase_date?: string | null
           seasons?: string[] | null
           size?: string | null
+          style_tags?: string[] | null
           subcategory?: string | null
           tags?: string[] | null
           times_worn?: number
@@ -72,9 +76,11 @@ export type Database = {
           name?: string
           notes?: string | null
           occasions?: string[] | null
+          pattern?: string | null
           purchase_date?: string | null
           seasons?: string[] | null
           size?: string | null
+          style_tags?: string[] | null
           subcategory?: string | null
           tags?: string[] | null
           times_worn?: number

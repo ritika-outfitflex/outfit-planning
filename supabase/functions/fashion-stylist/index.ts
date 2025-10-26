@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL');
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
@@ -50,12 +50,15 @@ serve(async (req) => {
       });
     }
 
-    // Prepare wardrobe data for AI
+    // Prepare wardrobe data for AI with pattern and color info
     const wardrobeData = items.map(item => ({
       name: item.name,
       category: item.category,
       subcategory: item.subcategory,
       color: item.color,
+      hex_color: item.hex_color,
+      pattern: item.pattern || 'solid',
+      style_tags: item.style_tags || [],
       size: item.size,
       material: item.material,
       seasons: item.seasons || [],
@@ -63,81 +66,120 @@ serve(async (req) => {
       notes: item.notes
     }));
 
-    const prompt = `You are a professional fashion stylist for the OutfitFlex app.
-You must suggest outfits using the user's wardrobe only.
+    const prompt = `You are a professional fashion stylist for the OutfitFlex app with expertise in color theory and pattern mixing.
 
-Wardrobe items will always be provided with names and image URLs.
+CRITICAL COLOR COMBINATION RULES:
+1. Complementary colors work well together (opposite on color wheel)
+2. Analogous colors (adjacent on color wheel) create harmonious looks
+3. Neutral colors (black, white, gray, beige, navy) pair with any color
+4. Avoid clashing: red with pink, orange with purple (unless intentional high-fashion)
+5. Use the 60-30-10 rule: 60% dominant color, 30% secondary, 10% accent
 
-Use only items from wardrobe for tops, bottoms, dresses, layering, and accessories.
+PATTERN MIXING RULES:
+1. Mix different scale patterns (large floral with small stripes)
+2. Keep similar color palettes when mixing patterns
+3. Use solid colors to break up patterns
+4. Limit to 2-3 patterns maximum per outfit
+5. Pattern combinations that work:
+   - Stripes + Florals
+   - Geometric + Solid
+   - Plaid + Solid
+   - Abstract + Stripes
+6. Avoid: Same pattern type (e.g., two different florals), competing busy patterns
 
-For footwear:
-- If footwear exists in wardrobe, suggest from wardrobe.
-- If no footwear is in wardrobe, recommend suitable styles (e.g., "white sneakers", "tan loafers") but clearly mark them as suggestions only.
+COLOR-SPECIFIC PAIRING GUIDE:
+- Blue: pairs with white, beige, brown, orange, yellow
+- Red: pairs with black, white, navy, beige
+- Green: pairs with beige, brown, white, navy
+- Yellow: pairs with gray, navy, white, purple
+- Pink: pairs with gray, white, navy, green
+- Purple: pairs with gray, white, yellow, green
 
-Always include accessory or styling tips (e.g., "pair with a slim black belt" or "add a silver pendant necklace").
+PATTERN-SPECIFIC PAIRING:
+- Striped items: pair with solid colors or small geometric patterns
+- Floral items: pair with solid neutrals or subtle textures
+- Geometric items: pair with solid colors
+- Plaid/Checkered: pair with solid colors only
+- Animal print: treat as neutral, pair with solid colors
 
-Filters:
+Filters requested:
 - Occasion: ${filters.occasion || 'any'}
 - Season: ${filters.season || 'any'}
 - Weather: ${filters.weather || 'any'}
 - Style preference: ${filters.style || 'any'}
 
-Rules:
-1. Outfits must match Occasion, Season, Weather, and Style preference given by the user.
-2. Provide 2–3 outfit combinations.
-3. Each outfit must return:
-   - title (short name for outfit)
-   - match_score (percentage of fit)
-   - items (list of wardrobe items by name → so app can fetch stored image URLs)
-   - footwear (either wardrobe item or text suggestion if wardrobe has none)
-   - accessories (tips on accessories to complete the look)
-   - reasoning (why this outfit fits the filters)
-
-Wardrobe items available:
+Wardrobe items available (with color hex codes and patterns):
 ${JSON.stringify(wardrobeData, null, 2)}
 
-Output must be JSON in this exact structure:
+Rules:
+1. Apply color theory - NO random color combinations
+2. Check pattern compatibility before pairing
+3. Provide 2-3 outfit combinations ranked by color/pattern harmony
+4. Each outfit must have:
+   - title (descriptive name)
+   - match_score (0-100, based on color/pattern harmony + filter match)
+   - items (wardrobe item names)
+   - footwear (from wardrobe or suggestion)
+   - accessories (styling tips)
+   - reasoning (explain the color/pattern choices)
+   - color_harmony_score (0-100, how well colors work together)
+   - pattern_balance (description of pattern mixing strategy)
+
+Output JSON format:
 {
   "outfits": [
     {
-      "title": "Workday Minimalist",
-      "match_score": "92%",
-      "items": ["White Polka Top", "Blue Cargo Jeans"],
-      "footwear": "White Sneakers (suggestion)",
-      "accessories": "Simple silver chain, black tote bag",
-      "reasoning": "Breathable outfit for summer workday, minimalist and functional."
+      "title": "Navy & Tan Business Casual",
+      "match_score": 95,
+      "color_harmony_score": 98,
+      "pattern_balance": "Solid navy top with neutral tan bottoms - classic complementary pairing",
+      "items": ["Navy Blazer", "Tan Chinos"],
+      "footwear": "Brown Loafers",
+      "accessories": "Silver watch, leather belt",
+      "reasoning": "Navy and tan are timeless business colors. Both solid patterns keep it professional. Perfect for work occasion."
     }
-  ],
-  "feedback": {
-    "like_dislike": "User can mark Like or Dislike for training."
-  }
+  ]
 }`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'google/gemini-2.5-flash',
         messages: [
           {
             role: 'system',
-            content: 'You are a professional fashion stylist. Always respond with valid JSON only, no additional text or formatting.'
+            content: 'You are a professional fashion stylist with expertise in color theory and pattern mixing. Always respond with valid JSON only, no additional text or formatting.'
           },
           {
             role: 'user',
             content: prompt
           }
         ],
-        temperature: 0.7,
-        max_tokens: 2000,
       }),
     });
 
     if (!response.ok) {
-      console.error('OpenAI API error:', response.status, response.statusText);
+      const errorText = await response.text();
+      console.error('Lovable AI error:', response.status, errorText);
+      
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ error: 'AI credits depleted. Please add credits.' }), {
+          status: 402,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
       return new Response(JSON.stringify({ error: 'AI service unavailable' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, Upload, Camera, Palette, Sparkles } from 'lucide-react';
 import { useClothingItems } from '@/hooks/useClothingItems';
 import { useAdvancedColorDetection } from '@/hooks/useAdvancedColorDetection';
+import { usePatternDetection } from '@/hooks/usePatternDetection';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -45,7 +46,11 @@ const AddItemPage = ({ editItem, onSave }: AddItemPageProps) => {
   const { user } = useAuth();
   const { addItem, updateItem } = useClothingItems();
   const { processImage, isProcessing, progress } = useAdvancedColorDetection();
+  const { detectPattern, isProcessing: isDetectingPattern } = usePatternDetection();
   const { toast } = useToast();
+  
+  const [detectedPattern, setDetectedPattern] = useState<string>(editItem?.pattern || '');
+  const [styleTags, setStyleTags] = useState<string[]>(editItem?.style_tags || []);
 
   const categories = [
     'Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Shoes', 
@@ -121,25 +126,41 @@ const AddItemPage = ({ editItem, onSave }: AddItemPageProps) => {
     setSelectedFile(file);
     
     try {
-      const result = await processImage(file);
-      setColorDetectionResult(result);
+      // Process color detection
+      const colorResult = await processImage(file);
+      setColorDetectionResult(colorResult);
       
-      if (result.primaryColor) {
+      if (colorResult.primaryColor) {
         setSelectedColor({
-          name: result.primaryColor.name,
-          hex: result.primaryColor.hex
+          name: colorResult.primaryColor.name,
+          hex: colorResult.primaryColor.hex
         });
       }
+
+      // Detect patterns
+      toast({
+        title: "Analyzing patterns...",
+        description: "Detecting patterns and style for better outfit suggestions",
+      });
+      
+      const patternResult = await detectPattern(file);
+      setDetectedPattern(patternResult.pattern);
+      setStyleTags(patternResult.styleTags);
+      
+      toast({
+        title: "Analysis complete!",
+        description: `Detected: ${patternResult.pattern} pattern with ${colorResult.primaryColor?.name || 'color'} tones`,
+      });
 
       // Auto-generate description after processing
       if (category) {
         await generateDescription(file);
       }
     } catch (error) {
-      console.error('Color detection error:', error);
+      console.error('Detection error:', error);
       toast({
-        title: "Color detection failed",
-        description: "We'll use a default color. You can change it later.",
+        title: "Analysis warning",
+        description: "Some features may be limited. You can still add the item.",
         variant: "destructive"
       });
     }
@@ -204,6 +225,8 @@ const AddItemPage = ({ editItem, onSave }: AddItemPageProps) => {
         subcategory: subcategory || undefined,
         color: selectedColor.name || 'Unknown',
         hex_color: selectedColor.hex || '#808080',
+        pattern: detectedPattern || 'solid',
+        style_tags: styleTags.length > 0 ? styleTags : undefined,
         size: size.trim() || undefined,
         material: material.trim() || undefined,
         seasons: seasons.length > 0 ? seasons : undefined,
@@ -328,14 +351,31 @@ const AddItemPage = ({ editItem, onSave }: AddItemPageProps) => {
             </Button>
           </div>
 
-          {isProcessing && (
+          {(isProcessing || isDetectingPattern) && (
             <div className="space-y-3 p-4 bg-gradient-to-r from-outfit-primary/10 to-outfit-secondary/10 rounded-lg">
               <div className="flex items-center gap-2">
                 <Palette className="h-4 w-4 text-outfit-primary animate-pulse" />
-                <span className="text-sm font-medium text-outfit-primary">{getRandomMessage('colors')}</span>
+                <span className="text-sm font-medium text-outfit-primary">
+                  {isProcessing ? getRandomMessage('colors') : 'Detecting patterns and style...'}
+                </span>
               </div>
               <Progress value={progress} className="w-full" />
-              <p className="text-xs text-muted-foreground">{getRandomMessage('upload')}</p>
+              <p className="text-xs text-muted-foreground">
+                {isProcessing ? getRandomMessage('upload') : 'Analyzing fabric patterns for smarter outfit suggestions'}
+              </p>
+            </div>
+          )}
+
+          {detectedPattern && (
+            <div className="p-3 bg-accent/50 rounded-lg border border-primary/20">
+              <p className="text-sm">
+                <span className="font-medium">Pattern:</span> {detectedPattern}
+                {styleTags.length > 0 && (
+                  <span className="ml-2 text-muted-foreground">
+                    • Style: {styleTags.join(', ')}
+                  </span>
+                )}
+              </p>
             </div>
           )}
 
