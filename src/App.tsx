@@ -9,6 +9,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import MobileLayout from "./components/Layout/MobileLayout";
 import WelcomeScreen from "./components/WelcomeScreen";
+import OnboardingScreens from "./components/Onboarding/OnboardingScreens";
 import Index from "./pages/Index";
 import Wardrobe from "./pages/Wardrobe";
 import Outfits from "./pages/Outfits";
@@ -27,16 +28,27 @@ const queryClient = new QueryClient();
 
 const AppContent = () => {
   const { user } = useAuth();
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
 
   useEffect(() => {
     if (user) {
+      const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
       const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
-      if (!hasSeenWelcome) {
+      
+      if (!hasSeenOnboarding) {
+        setShowOnboarding(true);
+      } else if (!hasSeenWelcome) {
         setShowWelcome(true);
       }
     }
   }, [user]);
+
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('hasSeenOnboarding', 'true');
+    setShowOnboarding(false);
+    setShowWelcome(true);
+  };
 
   const handleWelcomeComplete = () => {
     localStorage.setItem('hasSeenWelcome', 'true');
@@ -45,6 +57,7 @@ const AppContent = () => {
 
   return (
     <>
+      {showOnboarding && <OnboardingScreens onComplete={handleOnboardingComplete} />}
       {showWelcome && <WelcomeScreen onComplete={handleWelcomeComplete} />}
       <Routes>
         <Route path="/auth" element={<Auth />} />
