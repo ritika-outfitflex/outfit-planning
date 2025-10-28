@@ -11,6 +11,8 @@ import { ArrowLeft, Upload, Camera, Palette, Sparkles } from 'lucide-react';
 import { useClothingItems } from '@/hooks/useClothingItems';
 import { useAdvancedColorDetection } from '@/hooks/useAdvancedColorDetection';
 import { usePatternDetection } from '@/hooks/usePatternDetection';
+import { useDetailedAttributeDetection } from '@/hooks/useDetailedAttributeDetection';
+import { useItemNameGenerator } from '@/hooks/useItemNameGenerator';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -47,10 +49,16 @@ const AddItemPage = ({ editItem, onSave }: AddItemPageProps) => {
   const { addItem, updateItem } = useClothingItems();
   const { processImage, isProcessing, progress } = useAdvancedColorDetection();
   const { detectPattern, isProcessing: isDetectingPattern } = usePatternDetection();
+  const { detectAttributes, isProcessing: isDetectingAttributes } = useDetailedAttributeDetection();
+  const { generateName, isGenerating } = useItemNameGenerator();
   const { toast } = useToast();
   
   const [detectedPattern, setDetectedPattern] = useState<string>(editItem?.pattern || '');
   const [styleTags, setStyleTags] = useState<string[]>(editItem?.style_tags || []);
+  const [sleeveType, setSleeveType] = useState<string>(editItem?.sleeve_type || '');
+  const [pantStyle, setPantStyle] = useState<string>(editItem?.pant_style || '');
+  const [neckline, setNeckline] = useState<string>(editItem?.neckline || '');
+  const [fit, setFit] = useState<string>(editItem?.fit || '');
 
   const categories = [
     'Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Shoes', 
@@ -138,23 +146,44 @@ const AddItemPage = ({ editItem, onSave }: AddItemPageProps) => {
       }
 
       // Detect patterns
-      toast({
-        title: "Analyzing patterns...",
-        description: "Detecting patterns and style for better outfit suggestions",
-      });
-      
       const patternResult = await detectPattern(file);
       setDetectedPattern(patternResult.pattern);
       setStyleTags(patternResult.styleTags);
-      
-      toast({
-        title: "Analysis complete!",
-        description: `Detected: ${patternResult.pattern} pattern with ${colorResult.primaryColor?.name || 'color'} tones`,
-      });
 
-      // Auto-generate description after processing
+      // Detect detailed attributes
       if (category) {
-        await generateDescription(file);
+        toast({
+          title: "Analyzing details...",
+          description: "Detecting sleeves, fit, and style details",
+        });
+        
+        const attributes = await detectAttributes(file, category, subcategory);
+        if (attributes.sleeveType) setSleeveType(attributes.sleeveType);
+        if (attributes.pantStyle) setPantStyle(attributes.pantStyle);
+        if (attributes.neckline) setNeckline(attributes.neckline);
+        if (attributes.fit) setFit(attributes.fit);
+
+        // Auto-generate name
+        const generatedName = await generateName({
+          category,
+          subcategory,
+          color: colorResult.primaryColor?.name || selectedColor.name,
+          pattern: patternResult.pattern,
+          material,
+          sleeveType: attributes.sleeveType,
+          pantStyle: attributes.pantStyle,
+          neckline: attributes.neckline,
+          fit: attributes.fit,
+        });
+        
+        if (!name) {
+          setName(generatedName);
+        }
+        
+        toast({
+          title: "Analysis complete!",
+          description: `Auto-generated name and detected all attributes`,
+        });
       }
     } catch (error) {
       console.error('Detection error:', error);
@@ -227,6 +256,10 @@ const AddItemPage = ({ editItem, onSave }: AddItemPageProps) => {
         hex_color: selectedColor.hex || '#808080',
         pattern: detectedPattern || 'solid',
         style_tags: styleTags.length > 0 ? styleTags : undefined,
+        sleeve_type: sleeveType || undefined,
+        pant_style: pantStyle || undefined,
+        neckline: neckline || undefined,
+        fit: fit || undefined,
         size: size.trim() || undefined,
         material: material.trim() || undefined,
         seasons: seasons.length > 0 ? seasons : undefined,
@@ -351,31 +384,58 @@ const AddItemPage = ({ editItem, onSave }: AddItemPageProps) => {
             </Button>
           </div>
 
-          {(isProcessing || isDetectingPattern) && (
+          {(isProcessing || isDetectingPattern || isDetectingAttributes || isGenerating) && (
             <div className="space-y-3 p-4 bg-gradient-to-r from-outfit-primary/10 to-outfit-secondary/10 rounded-lg">
               <div className="flex items-center gap-2">
                 <Palette className="h-4 w-4 text-outfit-primary animate-pulse" />
                 <span className="text-sm font-medium text-outfit-primary">
-                  {isProcessing ? getRandomMessage('colors') : 'Detecting patterns and style...'}
+                  {isProcessing ? getRandomMessage('colors') : 
+                   isDetectingPattern ? 'Detecting patterns...' :
+                   isDetectingAttributes ? 'Analyzing sleeves, fit & style...' :
+                   'Generating name...'}
                 </span>
               </div>
               <Progress value={progress} className="w-full" />
               <p className="text-xs text-muted-foreground">
-                {isProcessing ? getRandomMessage('upload') : 'Analyzing fabric patterns for smarter outfit suggestions'}
+                {isProcessing ? getRandomMessage('upload') : 
+                 'AI is analyzing your item to make adding clothes super easy'}
               </p>
             </div>
           )}
 
-          {detectedPattern && (
-            <div className="p-3 bg-accent/50 rounded-lg border border-primary/20">
-              <p className="text-sm">
-                <span className="font-medium">Pattern:</span> {detectedPattern}
-                {styleTags.length > 0 && (
-                  <span className="ml-2 text-muted-foreground">
-                    • Style: {styleTags.join(', ')}
-                  </span>
-                )}
-              </p>
+          {(detectedPattern || sleeveType || pantStyle || neckline || fit) && (
+            <div className="p-3 bg-accent/50 rounded-lg border border-primary/20 space-y-1">
+              <p className="text-sm font-medium mb-2">🤖 AI Detected Attributes:</p>
+              {detectedPattern && (
+                <p className="text-sm">
+                  <span className="font-medium">Pattern:</span> {detectedPattern}
+                </p>
+              )}
+              {sleeveType && (
+                <p className="text-sm">
+                  <span className="font-medium">Sleeves:</span> {sleeveType}
+                </p>
+              )}
+              {pantStyle && (
+                <p className="text-sm">
+                  <span className="font-medium">Pant Style:</span> {pantStyle}
+                </p>
+              )}
+              {neckline && (
+                <p className="text-sm">
+                  <span className="font-medium">Neckline:</span> {neckline}
+                </p>
+              )}
+              {fit && (
+                <p className="text-sm">
+                  <span className="font-medium">Fit:</span> {fit}
+                </p>
+              )}
+              {styleTags.length > 0 && (
+                <p className="text-sm">
+                  <span className="font-medium">Style Tags:</span> {styleTags.join(', ')}
+                </p>
+              )}
             </div>
           )}
 

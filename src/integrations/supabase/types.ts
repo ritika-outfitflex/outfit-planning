@@ -19,6 +19,7 @@ export type Database = {
           category: string
           color: string
           created_at: string
+          fit: string | null
           hex_color: string
           id: string
           image_url: string | null
@@ -26,12 +27,15 @@ export type Database = {
           last_worn: string | null
           material: string | null
           name: string
+          neckline: string | null
           notes: string | null
           occasions: string[] | null
+          pant_style: string | null
           pattern: string | null
           purchase_date: string | null
           seasons: string[] | null
           size: string | null
+          sleeve_type: string | null
           style_tags: string[] | null
           subcategory: string | null
           tags: string[] | null
@@ -43,6 +47,7 @@ export type Database = {
           category: string
           color: string
           created_at?: string
+          fit?: string | null
           hex_color: string
           id?: string
           image_url?: string | null
@@ -50,12 +55,15 @@ export type Database = {
           last_worn?: string | null
           material?: string | null
           name: string
+          neckline?: string | null
           notes?: string | null
           occasions?: string[] | null
+          pant_style?: string | null
           pattern?: string | null
           purchase_date?: string | null
           seasons?: string[] | null
           size?: string | null
+          sleeve_type?: string | null
           style_tags?: string[] | null
           subcategory?: string | null
           tags?: string[] | null
@@ -67,6 +75,7 @@ export type Database = {
           category?: string
           color?: string
           created_at?: string
+          fit?: string | null
           hex_color?: string
           id?: string
           image_url?: string | null
@@ -74,12 +83,15 @@ export type Database = {
           last_worn?: string | null
           material?: string | null
           name?: string
+          neckline?: string | null
           notes?: string | null
           occasions?: string[] | null
+          pant_style?: string | null
           pattern?: string | null
           purchase_date?: string | null
           seasons?: string[] | null
           size?: string | null
+          sleeve_type?: string | null
           style_tags?: string[] | null
           subcategory?: string | null
           tags?: string[] | null
