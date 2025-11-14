@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useClothingItems } from '@/hooks/useClothingItems';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingBag, Sparkles, ExternalLink, TrendingUp } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ShoppingBag, Sparkles, ExternalLink, TrendingUp, Search, Filter, Info } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface ProductRecommendation {
   id: string;
@@ -19,14 +23,20 @@ interface ProductRecommendation {
   reason: string;
   matchScore: number;
   shopUrl: string;
+  affiliateNetwork?: string;
+  commission?: string;
 }
 
 const Shop = () => {
   const { items, loading: itemsLoading } = useClothingItems();
+  const { user } = useAuth();
   const { profile } = useUserProfile();
   const { toast } = useToast();
   const [recommendations, setRecommendations] = useState<ProductRecommendation[]>([]);
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [priceFilter, setPriceFilter] = useState<string>('all');
 
   useEffect(() => {
     if (!itemsLoading && items.length > 0) {
@@ -35,6 +45,8 @@ const Shop = () => {
   }, [itemsLoading, items]);
 
   const generateRecommendations = async () => {
+    if (!user) return;
+    
     setLoading(true);
     try {
       // Analyze wardrobe to find gaps
@@ -46,87 +58,28 @@ const Shop = () => {
         categoryCount[cat] = (categoryCount[cat] || 0) + 1;
       });
 
-      // Generate AI-powered recommendations based on wardrobe analysis
-      const wardrobeAnalysis = {
-        totalItems: items.length,
-        categories: Object.keys(categoryCount),
-        dominantColors: [...new Set(colors)].slice(0, 3),
-        missingCategories: ['Accessories', 'Outerwear', 'Footwear'].filter(
-          cat => !categories.includes(cat)
-        )
-      };
+      // Identify wardrobe gaps
+      const allCategories = ['Tops', 'Bottoms', 'Dresses', 'Shoes', 'Accessories', 'Outerwear'];
+      const gaps = allCategories
+        .filter(cat => !categories.includes(cat) || categoryCount[cat] < 3)
+        .map(cat => ({
+          category: cat,
+          color: colors[Math.floor(Math.random() * colors.length)]
+        }));
 
-      // Simulated product recommendations (in production, this would call an e-commerce API)
-      const mockRecommendations: ProductRecommendation[] = [
-        {
-          id: '1',
-          name: 'Classic Leather Jacket',
-          category: 'Outerwear',
-          color: 'Black',
-          price: '$149.99',
-          image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400',
-          reason: 'Perfect layering piece for your wardrobe',
-          matchScore: 95,
-          shopUrl: '#'
-        },
-        {
-          id: '2',
-          name: 'Designer Sneakers',
-          category: 'Footwear',
-          color: 'White',
-          price: '$89.99',
-          image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400',
-          reason: 'Versatile footwear to complete any outfit',
-          matchScore: 92,
-          shopUrl: '#'
-        },
-        {
-          id: '3',
-          name: 'Minimalist Watch',
-          category: 'Accessories',
-          color: 'Silver',
-          price: '$199.99',
-          image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400',
-          reason: 'Elevate your style with timeless accessories',
-          matchScore: 88,
-          shopUrl: '#'
-        },
-        {
-          id: '4',
-          name: 'Silk Scarf',
-          category: 'Accessories',
-          color: 'Floral',
-          price: '$45.99',
-          image: 'https://images.unsplash.com/photo-1601924994987-69e26d50dc26?w=400',
-          reason: 'Add elegance and variety to your outfits',
-          matchScore: 85,
-          shopUrl: '#'
-        },
-        {
-          id: '5',
-          name: 'Denim Jacket',
-          category: 'Outerwear',
-          color: 'Blue',
-          price: '$79.99',
-          image: 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=400',
-          reason: 'Essential casual layer for every season',
-          matchScore: 90,
-          shopUrl: '#'
-        },
-        {
-          id: '6',
-          name: 'Crossbody Bag',
-          category: 'Accessories',
-          color: 'Brown',
-          price: '$129.99',
-          image: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400',
-          reason: 'Practical accessory that complements your style',
-          matchScore: 87,
-          shopUrl: '#'
+      // Call edge function to fetch real product recommendations
+      const { data, error } = await supabase.functions.invoke('product-search', {
+        body: {
+          gaps: gaps.slice(0, 6), // Get top 6 recommendations
+          userId: user.id
         }
-      ];
+      });
 
-      setRecommendations(mockRecommendations);
+      if (error) throw error;
+
+      if (data?.products) {
+        setRecommendations(data.products);
+      }
     } catch (error) {
       console.error('Error generating recommendations:', error);
       toast({
@@ -138,6 +91,26 @@ const Shop = () => {
       setLoading(false);
     }
   };
+
+  // Filter recommendations
+  const filteredRecommendations = recommendations.filter(product => {
+    const matchesSearch = searchQuery === '' ||
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.category.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesCategory = categoryFilter === 'all' || product.category === categoryFilter;
+    
+    const matchesPrice = priceFilter === 'all' || (() => {
+      const price = parseFloat(product.price.replace('$', ''));
+      if (priceFilter === 'under50') return price < 50;
+      if (priceFilter === '50to100') return price >= 50 && price < 100;
+      if (priceFilter === '100to200') return price >= 100 && price < 200;
+      if (priceFilter === 'over200') return price >= 200;
+      return true;
+    })();
+    
+    return matchesSearch && matchesCategory && matchesPrice;
+  });
 
   if (itemsLoading || loading) {
     return (
@@ -168,6 +141,14 @@ const Shop = () => {
       </div>
 
       <div className="px-4 space-y-6">
+        {/* Affiliate Disclosure */}
+        <Alert className="border-primary/30 bg-primary/5">
+          <Info className="h-4 w-4" />
+          <AlertDescription className="text-sm">
+            <strong>Affiliate Disclosure:</strong> OutfitFlex may earn a commission from purchases made through these links at no extra cost to you.
+          </AlertDescription>
+        </Alert>
+
         {/* AI Recommendation Banner */}
         <Card className="bg-gradient-to-r from-primary/20 via-secondary/20 to-accent/20 border-primary/30">
           <CardContent className="p-4">
@@ -183,9 +164,55 @@ const Shop = () => {
           </CardContent>
         </Card>
 
+        {/* Search and Filters */}
+        <div className="space-y-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search products..."
+              className="pl-9"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="flex gap-2">
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="flex-1">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="Tops">Tops</SelectItem>
+                <SelectItem value="Bottoms">Bottoms</SelectItem>
+                <SelectItem value="Dresses">Dresses</SelectItem>
+                <SelectItem value="Shoes">Shoes</SelectItem>
+                <SelectItem value="Accessories">Accessories</SelectItem>
+                <SelectItem value="Outerwear">Outerwear</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={priceFilter} onValueChange={setPriceFilter}>
+              <SelectTrigger className="flex-1">
+                <SelectValue placeholder="Price" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Prices</SelectItem>
+                <SelectItem value="under50">Under $50</SelectItem>
+                <SelectItem value="50to100">$50 - $100</SelectItem>
+                <SelectItem value="100to200">$100 - $200</SelectItem>
+                <SelectItem value="over200">Over $200</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Results count */}
+        <p className="text-sm text-muted-foreground">
+          Showing {filteredRecommendations.length} of {recommendations.length} products
+        </p>
+
         {/* Product Grid */}
         <div className="grid grid-cols-2 gap-4">
-          {recommendations.map((product) => (
+          {filteredRecommendations.map((product) => (
             <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
               <div className="relative">
                 <img
@@ -214,9 +241,10 @@ const Shop = () => {
                   className="w-full" 
                   size="sm"
                   onClick={() => {
+                    window.open(product.shopUrl, '_blank');
                     toast({
-                      title: 'Coming Soon',
-                      description: 'E-commerce integration will be available soon!',
+                      title: 'Opening Shop',
+                      description: 'Redirecting to retailer...',
                     });
                   }}
                 >

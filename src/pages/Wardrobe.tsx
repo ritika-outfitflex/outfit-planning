@@ -1,8 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Shirt, Heart, Star } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Search, Shirt, Heart, Star, Filter, SlidersHorizontal } from 'lucide-react';
+import FilterPanel from '@/components/Wardrobe/FilterPanel';
+import { Badge } from '@/components/ui/badge';
 import ClothingItem from '@/components/Wardrobe/ClothingItem';
 import { Input } from '@/components/ui/input';
 import { useNavigate } from 'react-router-dom';
@@ -15,16 +18,73 @@ const categories = ['All', 'Tops', 'Bottoms', 'Dresses', 'Shoes', 'Accessories']
 const WardrobePage = () => {
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [filters, setFilters] = useState({
+    colors: [] as string[],
+    seasons: [] as string[],
+    occasions: [] as string[],
+    categories: [] as string[],
+    timesWornRange: [0, 100] as [number, number],
+    favorites: false
+  });
   const navigate = useNavigate();
   const { items, loading } = useClothingItems();
   const { getFirstName } = useUserProfile();
   
-  const filteredItems = items.filter(item => {
-    const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         item.color.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  // Extract available filter options from items
+  const availableFilters = useMemo(() => {
+    const colors = [...new Set(items.map(item => item.color))].filter(Boolean);
+    const seasons = [...new Set(items.flatMap(item => item.seasons || []))].filter(Boolean);
+    const occasions = [...new Set(items.flatMap(item => item.occasions || []))].filter(Boolean);
+    const categories = [...new Set(items.map(item => item.category))].filter(Boolean);
+    
+    return { colors, seasons, occasions, categories };
+  }, [items]);
+  
+  const filteredItems = useMemo(() => {
+    return items.filter(item => {
+      // Category filter
+      const matchesCategory = activeCategory === 'All' || item.category === activeCategory;
+      
+      // Search query
+      const matchesSearch = searchQuery === '' || 
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.color.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.category.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // Color filter
+      const matchesColor = filters.colors.length === 0 || filters.colors.includes(item.color);
+      
+      // Season filter
+      const matchesSeason = filters.seasons.length === 0 || 
+        (item.seasons && item.seasons.some(s => filters.seasons.includes(s)));
+      
+      // Occasion filter
+      const matchesOccasion = filters.occasions.length === 0 || 
+        (item.occasions && item.occasions.some(o => filters.occasions.includes(o)));
+      
+      // Category filter from filter panel
+      const matchesFilterCategory = filters.categories.length === 0 || 
+        filters.categories.includes(item.category);
+      
+      // Times worn range
+      const matchesTimesWorn = item.times_worn >= filters.timesWornRange[0] && 
+        (filters.timesWornRange[1] === 100 ? true : item.times_worn <= filters.timesWornRange[1]);
+      
+      // Favorites filter
+      const matchesFavorites = !filters.favorites || item.is_favorite;
+      
+      return matchesCategory && matchesSearch && matchesColor && matchesSeason && 
+             matchesOccasion && matchesFilterCategory && matchesTimesWorn && matchesFavorites;
+    });
+  }, [items, activeCategory, searchQuery, filters]);
+  
+  const activeFilterCount = 
+    filters.colors.length + 
+    filters.seasons.length + 
+    filters.occasions.length + 
+    filters.categories.length + 
+    (filters.favorites ? 1 : 0) +
+    (filters.timesWornRange[0] !== 0 || filters.timesWornRange[1] !== 100 ? 1 : 0);
 
   if (loading) {
     return (
@@ -73,15 +133,42 @@ const WardrobePage = () => {
       </div>
       
       <div className="px-4 space-y-6">
-        {/* Search Bar */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            placeholder="Search your fashion items..." 
-            className="pl-9 border-primary/20 focus:border-primary transition-colors rounded-xl bg-gradient-card"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        {/* Search Bar with Filter */}
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Search by name, color, category..." 
+              className="pl-9 border-primary/20 focus:border-primary transition-colors rounded-xl bg-gradient-card"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon" className="relative rounded-xl">
+                <SlidersHorizontal className="h-4 w-4" />
+                {activeFilterCount > 0 && (
+                  <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 text-xs">
+                    {activeFilterCount}
+                  </Badge>
+                )}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-80 overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle>Filter Your Wardrobe</SheetTitle>
+              </SheetHeader>
+              <div className="mt-6">
+                <FilterPanel
+                  filters={filters}
+                  onFilterChange={setFilters}
+                  availableFilters={availableFilters}
+                  activeFilterCount={activeFilterCount}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
 
         {/* Category Tabs */}
