@@ -21,6 +21,12 @@ export interface ClothingItem {
   last_worn?: string;
   is_favorite: boolean;
   tags?: string[];
+  style_tags?: string[];
+  pattern?: string;
+  sleeve_type?: string;
+  pant_style?: string;
+  neckline?: string;
+  fit?: string;
   created_at: string;
   updated_at: string;
 }
