@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Home, User, Search, TrendingUp, ShoppingBag } from 'lucide-react';
+import { Home, User, Search, TrendingUp, Sparkles } from 'lucide-react';
 
 const BottomNav: React.FC = () => {
   return (
@@ -35,13 +35,13 @@ const BottomNav: React.FC = () => {
         <span>Analytics</span>
       </NavLink>
       <NavLink 
-        to="/shop" 
+        to="/outfits" 
         className={({isActive}) => 
           `bottom-nav-item ${isActive ? 'active' : ''}`
         }
       >
-        <ShoppingBag className="bottom-nav-icon" />
-        <span>Shop</span>
+        <Sparkles className="bottom-nav-icon" />
+        <span>Outfits</span>
       </NavLink>
       <NavLink 
         to="/profile" 
