@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import ColorDetectionPreview from '@/components/ColorDetectionPreview';
-import { MultiSelect } from '@/components/MultiSelect';
+import MultiSelect from '@/components/MultiSelect';
 import { getRandomMessage } from '@/utils/loadingMessages';
 
 interface AddItemPageProps {
@@ -77,21 +77,9 @@ const AddItemPage = ({ editItem, onSave }: AddItemPageProps) => {
     'Activewear': ['Sports Bra', 'Workout Top', 'Yoga Pants', 'Shorts']
   };
 
-  const seasonOptions = [
-    { value: 'spring', label: 'Spring' },
-    { value: 'summer', label: 'Summer' },
-    { value: 'fall', label: 'Fall' },
-    { value: 'winter', label: 'Winter' }
-  ];
+  const seasonOptions = ['Spring', 'Summer', 'Fall', 'Winter'];
 
-  const occasionOptions = [
-    { value: 'casual', label: 'Casual' },
-    { value: 'work', label: 'Work' },
-    { value: 'formal', label: 'Formal' },
-    { value: 'party', label: 'Party' },
-    { value: 'date', label: 'Date' },
-    { value: 'workout', label: 'Workout' }
-  ];
+  const occasionOptions = ['Casual', 'Work', 'Formal', 'Party', 'Date', 'Workout'];
 
   const generateDescription = async (imageFile: File) => {
     if (!imageFile) return;
@@ -489,19 +477,25 @@ const AddItemPage = ({ editItem, onSave }: AddItemPageProps) => {
             </div>
           </div>
 
-          <MultiSelect
-            label="Seasons"
-            options={seasonOptions}
-            value={seasons}
-            onChange={setSeasons}
-          />
+          <div>
+            <label className="text-sm font-medium">Seasons</label>
+            <MultiSelect
+              options={seasonOptions}
+              selected={seasons}
+              onChange={setSeasons}
+              placeholder="Select seasons"
+            />
+          </div>
 
-          <MultiSelect
-            label="Occasions"
-            options={occasionOptions}
-            value={occasions}
-            onChange={setOccasions}
-          />
+          <div>
+            <label className="text-sm font-medium">Occasions</label>
+            <MultiSelect
+              options={occasionOptions}
+              selected={occasions}
+              onChange={setOccasions}
+              placeholder="Select occasions"
+            />
+          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>

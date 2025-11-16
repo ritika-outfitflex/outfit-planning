@@ -3,43 +3,45 @@ import React from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 
 interface MultiSelectProps {
-  label: string;
-  options: { value: string; label: string }[];
-  value: string[];
-  onChange: (value: string[]) => void;
+  options: string[];
+  selected: string[];
+  onChange: (selected: string[]) => void;
+  placeholder?: string;
   className?: string;
 }
 
-export const MultiSelect: React.FC<MultiSelectProps> = ({
-  label,
+const MultiSelect: React.FC<MultiSelectProps> = ({
   options,
-  value,
+  selected,
   onChange,
+  placeholder,
   className
 }) => {
-  const handleToggle = (optionValue: string) => {
-    const newValue = value.includes(optionValue)
-      ? value.filter(v => v !== optionValue)
-      : [...value, optionValue];
-    onChange(newValue);
+  const handleToggle = (option: string) => {
+    const newSelected = selected.includes(option)
+      ? selected.filter(v => v !== option)
+      : [...selected, option];
+    onChange(newSelected);
   };
 
   return (
     <div className={className}>
-      <label className="text-sm font-medium">{label}</label>
-      <div className="grid grid-cols-2 gap-2 mt-2">
+      {placeholder && selected.length === 0 && (
+        <p className="text-sm text-muted-foreground mb-2">{placeholder}</p>
+      )}
+      <div className="grid grid-cols-2 gap-2">
         {options.map((option) => (
-          <div key={option.value} className="flex items-center space-x-2">
+          <div key={option} className="flex items-center space-x-2">
             <Checkbox
-              id={`${label}-${option.value}`}
-              checked={value.includes(option.value)}
-              onCheckedChange={() => handleToggle(option.value)}
+              id={option}
+              checked={selected.includes(option)}
+              onCheckedChange={() => handleToggle(option)}
             />
             <label
-              htmlFor={`${label}-${option.value}`}
+              htmlFor={option}
               className="text-sm cursor-pointer"
             >
-              {option.label}
+              {option}
             </label>
           </div>
         ))}
@@ -47,3 +49,5 @@ export const MultiSelect: React.FC<MultiSelectProps> = ({
     </div>
   );
 };
+
+export default MultiSelect;
