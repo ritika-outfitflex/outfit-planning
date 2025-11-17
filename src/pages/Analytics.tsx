@@ -1,16 +1,16 @@
 import React from 'react';
 import { useClothingItems } from '@/hooks/useClothingItems';
 import { useOutfits } from '@/hooks/useOutfits';
-import { useUserProfile } from '@/hooks/useUserProfile';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Shirt, Heart, Calendar, Target } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { ArrowLeft, Shirt, Star, TrendingUp, Calendar, ChevronDown } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useNavigate } from 'react-router-dom';
 
 const Analytics = () => {
+  const navigate = useNavigate();
   const { items, loading: itemsLoading } = useClothingItems();
   const { outfits, loading: outfitsLoading } = useOutfits();
-  const { profile } = useUserProfile();
 
   const loading = itemsLoading || outfitsLoading;
 
@@ -25,7 +25,7 @@ const Analytics = () => {
     return acc;
   }, []);
 
-  // Color distribution (top 6)
+  // Color distribution
   const colorData = items.reduce((acc: any[], item) => {
     const existing = acc.find(d => d.name === item.color);
     if (existing) {
@@ -34,46 +34,27 @@ const Analytics = () => {
       acc.push({ name: item.color, value: 1, hex: item.hex_color });
     }
     return acc;
-  }, []).sort((a, b) => b.value - a.value).slice(0, 6);
+  }, []).sort((a, b) => b.value - a.value);
 
-  // Most worn items
-  const mostWornItems = [...items]
-    .sort((a, b) => b.times_worn - a.times_worn)
-    .slice(0, 5)
-    .map(item => ({
-      name: item.name.length > 20 ? item.name.substring(0, 20) + '...' : item.name,
-      timesWorn: item.times_worn
-    }));
+  // Most worn item
+  const mostWornItem = items.length > 0 
+    ? [...items].sort((a, b) => b.times_worn - a.times_worn)[0]
+    : null;
 
-  // Style tags analysis
-  const styleTagsData = items.reduce((acc: any[], item) => {
-    if (item.style_tags) {
-      item.style_tags.forEach(tag => {
-        const existing = acc.find(d => d.name === tag);
-        if (existing) {
-          existing.value += 1;
-        } else {
-          acc.push({ name: tag, value: 1 });
-        }
-      });
-    }
-    return acc;
-  }, []).sort((a, b) => b.value - a.value).slice(0, 5);
-
-  const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))'];
+  const COLORS = ['hsl(315 70% 65%)', 'hsl(280 60% 70%)'];
 
   const totalItems = items.length;
   const totalOutfits = outfits.length;
-  const favoriteItems = items.filter(item => item.is_favorite).length;
+  const favoriteOutfits = outfits.filter(outfit => outfit.is_favorite).length;
   const totalWears = items.reduce((sum, item) => sum + item.times_worn, 0);
 
   if (loading) {
     return (
-      <div className="safe-top safe-bottom pb-20 px-4">
-        <div className="space-y-6">
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-64 w-full" />
-          <Skeleton className="h-64 w-full" />
+      <div className="min-h-screen bg-background pb-20">
+        <div className="space-y-6 px-4 pt-6">
+          <Skeleton className="h-32 w-full rounded-3xl" />
+          <Skeleton className="h-48 w-full rounded-3xl" />
+          <Skeleton className="h-64 w-full rounded-3xl" />
         </div>
       </div>
     );
