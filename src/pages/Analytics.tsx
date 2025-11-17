@@ -3,7 +3,7 @@ import { useClothingItems } from '@/hooks/useClothingItems';
 import { useOutfits } from '@/hooks/useOutfits';
 import { Card, CardContent } from '@/components/ui/card';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { ArrowLeft, Shirt, Star, TrendingUp, Calendar, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Shirt, Star, TrendingUp, Calendar } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useNavigate } from 'react-router-dom';
 
@@ -41,7 +41,7 @@ const Analytics = () => {
     ? [...items].sort((a, b) => b.times_worn - a.times_worn)[0]
     : null;
 
-  const COLORS = ['hsl(315 70% 65%)', 'hsl(280 60% 70%)'];
+  const COLORS = ['hsl(315 70% 65%)', 'hsl(280 60% 70%)', 'hsl(340 70% 70%)', 'hsl(290 60% 75%)', 'hsl(320 65% 68%)'];
 
   const totalItems = items.length;
   const totalOutfits = outfits.length;
@@ -61,159 +61,145 @@ const Analytics = () => {
   }
 
   return (
-    <div className="safe-top safe-bottom pb-20 bg-gradient-to-b from-background via-background/95 to-background">
-      <div className="hero-header">
-        <div className="hero-content">
-          <div className="flex items-center gap-3 mb-2">
-            <TrendingUp className="w-8 h-8 text-primary" />
-            <h1 className="hero-title">Style Analytics</h1>
-          </div>
-          <p className="hero-subtitle">Insights into your wardrobe</p>
+    <div className="min-h-screen bg-background pb-20">
+      {/* Header */}
+      <div className="bg-gradient-to-br from-pink-400 via-purple-400 to-purple-500 text-white px-6 py-8 rounded-b-[2rem]">
+        <div className="flex items-center gap-3 mb-6">
+          <button onClick={() => navigate(-1)} className="p-2 hover:bg-white/20 rounded-full transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h1 className="text-2xl font-bold">Analytics</h1>
         </div>
-        <div className="hero-decoration" />
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 gap-3">
+          <Card className="bg-white/95 border-0 shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <Shirt className="w-8 h-8 text-pink-500" />
+                <div>
+                  <p className="text-2xl font-bold text-gray-800">{totalItems}</p>
+                  <p className="text-xs text-gray-600">Fashion Items</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/95 border-0 shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <Star className="w-8 h-8 text-purple-500" />
+                <div>
+                  <p className="text-2xl font-bold text-gray-800">{favoriteOutfits}</p>
+                  <p className="text-xs text-gray-600">Favorite Looks</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/95 border-0 shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <TrendingUp className="w-8 h-8 text-pink-500" />
+                <div>
+                  <p className="text-2xl font-bold text-gray-800">{totalOutfits}</p>
+                  <p className="text-xs text-gray-600">Outfits Created</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/95 border-0 shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <Calendar className="w-8 h-8 text-purple-500" />
+                <div>
+                  <p className="text-2xl font-bold text-gray-800">{totalWears}</p>
+                  <p className="text-xs text-gray-600">Total Wears</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
-      <div className="px-4 space-y-6">
-        {/* Key Metrics */}
-        <div className="grid grid-cols-2 gap-4">
-          <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <Shirt className="w-8 h-8 text-primary" />
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{totalItems}</p>
-                  <p className="text-xs text-muted-foreground">Fashion Items</p>
+      {/* Content */}
+      <div className="px-6 py-6 space-y-6">
+        {/* Wardrobe Composition */}
+        <Card className="border-0 shadow-sm rounded-3xl overflow-hidden">
+          <CardContent className="p-6">
+            <h2 className="text-lg font-semibold mb-4 text-gray-800">Wardrobe Composition</h2>
+            <div className="flex items-center justify-center">
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie
+                    data={categoryData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    fill="hsl(var(--primary))"
+                    dataKey="value"
+                    strokeWidth={0}
+                  >
+                    {categoryData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="grid grid-cols-2 gap-2 mt-4">
+              {categoryData.slice(0, 4).map((cat, index) => (
+                <div key={cat.name} className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                  <span className="text-sm text-gray-600">{cat.name}</span>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-secondary/10 to-secondary/5 border-secondary/20">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <Target className="w-8 h-8 text-secondary" />
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{totalOutfits}</p>
-                  <p className="text-xs text-muted-foreground">Style Combos</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-accent/10 to-accent/5 border-accent/20">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <Heart className="w-8 h-8 text-accent" />
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{favoriteItems}</p>
-                  <p className="text-xs text-muted-foreground">Favorites</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-chart-1/10 to-chart-1/5 border-chart-1/20">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <Calendar className="w-8 h-8 text-chart-1" />
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{totalWears}</p>
-                  <p className="text-xs text-muted-foreground">Total Wears</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Category Distribution */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Wardrobe by Category</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie
-                  data={categoryData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                  outerRadius={80}
-                  fill="hsl(var(--primary))"
-                  dataKey="value"
-                >
-                  {categoryData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
+              ))}
+            </div>
           </CardContent>
         </Card>
 
-        {/* Color Palette */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Your Color Palette</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={colorData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                <YAxis stroke="hsl(var(--muted-foreground))" />
-                <Tooltip />
-                <Bar dataKey="value" fill="hsl(var(--primary))">
-                  {colorData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.hex || COLORS[index % COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+        {/* Your Signature Hues */}
+        <Card className="border-0 shadow-sm rounded-3xl overflow-hidden">
+          <CardContent className="p-6">
+            <h2 className="text-lg font-semibold mb-4 text-gray-800">Your Signature Hues</h2>
+            
+            {/* Color Bar */}
+            <div className="flex h-16 rounded-2xl overflow-hidden mb-6">
+              {colorData.slice(0, 5).map((color, index) => (
+                <div
+                  key={index}
+                  style={{ 
+                    backgroundColor: color.hex,
+                    width: `${(color.value / items.length) * 100}%`
+                  }}
+                  className="transition-all"
+                />
+              ))}
+            </div>
+
+            {/* Most Worn Item */}
+            {mostWornItem && (
+              <div className="bg-gray-50 rounded-2xl p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Most Worn</p>
+                    <p className="font-semibold text-gray-800">{mostWornItem.name}</p>
+                    <p className="text-xs text-gray-500 mt-1">{mostWornItem.times_worn} wears</p>
+                  </div>
+                  {mostWornItem.image_url && (
+                    <img 
+                      src={mostWornItem.image_url} 
+                      alt={mostWornItem.name}
+                      className="w-16 h-16 object-cover rounded-xl"
+                    />
+                  )}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
-
-        {/* Most Worn Items */}
-        {mostWornItems.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Most Worn Items</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={mostWornItems} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis type="number" stroke="hsl(var(--muted-foreground))" />
-                  <YAxis type="category" dataKey="name" stroke="hsl(var(--muted-foreground))" width={100} />
-                  <Tooltip />
-                  <Bar dataKey="timesWorn" fill="hsl(var(--accent))" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Style Preferences */}
-        {styleTagsData.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Your Style Preferences</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={styleTagsData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="name" stroke="hsl(var(--muted-foreground))" />
-                  <YAxis stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="hsl(var(--secondary))" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   );
