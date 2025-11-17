@@ -13,6 +13,8 @@ const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
@@ -20,12 +22,31 @@ const AuthPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!isLogin && password !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!isLogin && fullName.trim().length < 2) {
+      toast({
+        title: "Error",
+        description: "Please enter your full name",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
       const { error } = isLogin 
         ? await signIn(email, password)
-        : await signUp(email, password);
+        : await signUp(email, password, fullName);
 
       if (error) {
         toast({
@@ -98,10 +119,22 @@ const AuthPage = () => {
         <CardContent className="space-y-6">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-4">
+              {!isLogin && (
+                <div className="relative">
+                  <Input
+                    type="text"
+                    placeholder="Full Name"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                    className="h-12 pl-4 border-outfit-primary/20 focus:border-outfit-primary bg-white/50 backdrop-blur-sm"
+                  />
+                </div>
+              )}
               <div className="relative">
                 <Input
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="Email Address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -111,13 +144,27 @@ const AuthPage = () => {
               <div className="relative">
                 <Input
                   type="password"
-                  placeholder="Enter your password"
+                  placeholder={isLogin ? "Password" : "Create Password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  minLength={6}
                   className="h-12 pl-4 border-outfit-primary/20 focus:border-outfit-primary bg-white/50 backdrop-blur-sm"
                 />
               </div>
+              {!isLogin && (
+                <div className="relative">
+                  <Input
+                    type="password"
+                    placeholder="Confirm Password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    className="h-12 pl-4 border-outfit-primary/20 focus:border-outfit-primary bg-white/50 backdrop-blur-sm"
+                  />
+                </div>
+              )}
             </div>
             <Button 
               type="submit" 
