@@ -21,7 +21,7 @@ const OutfitSuggestionsPage = () => {
   const [avatarMessage, setAvatarMessage] = useState('');
   
   const navigate = useNavigate();
-  const { suggestions, loading, generateSuggestions, saveOutfit } = useOutfitSuggestions();
+  const { suggestions, loading, generateSuggestions, saveOutfit, dislikeSuggestion } = useOutfitSuggestions();
   const { toast } = useToast();
 
 
@@ -48,6 +48,22 @@ const OutfitSuggestionsPage = () => {
       toast({
         title: "Error",
         description: "Failed to save outfit",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDislike = async (suggestion: any) => {
+    try {
+      await dislikeSuggestion(suggestion);
+      toast({
+        title: "Got it!",
+        description: "We'll avoid similar combinations in the future 👍"
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save preference",
         variant: "destructive"
       });
     }
@@ -227,14 +243,23 @@ const OutfitSuggestionsPage = () => {
                   <Badge variant="outline">{suggestion.occasion}</Badge>
                 </div>
 
-                <Button 
-                  onClick={() => handleSaveOutfit(suggestion)}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  Save This Outfit
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={() => handleSaveOutfit(suggestion)}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Outfit
+                  </Button>
+                  <Button 
+                    onClick={() => handleDislike(suggestion)}
+                    variant="ghost"
+                    className="flex-1"
+                  >
+                    Not My Style
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
