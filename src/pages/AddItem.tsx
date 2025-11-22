@@ -62,7 +62,7 @@ const AddItemPage = ({ editItem, onSave }: AddItemPageProps) => {
 
   const categories = [
     'Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Shoes', 
-    'Accessories', 'Underwear', 'Sleepwear', 'Activewear'
+    'Accessories', 'Sleepwear', 'Corsets & Vests'
   ];
 
   const subcategories = {
@@ -72,9 +72,8 @@ const AddItemPage = ({ editItem, onSave }: AddItemPageProps) => {
     'Outerwear': ['Jacket', 'Coat', 'Blazer', 'Cardigan'],
     'Shoes': ['Sneakers', 'Boots', 'Heels', 'Flats', 'Sandals'],
     'Accessories': ['Bag', 'Hat', 'Scarf', 'Belt', 'Jewelry'],
-    'Underwear': ['Bra', 'Underwear', 'Socks'],
     'Sleepwear': ['Pajamas', 'Nightgown', 'Robe'],
-    'Activewear': ['Sports Bra', 'Workout Top', 'Yoga Pants', 'Shorts']
+    'Corsets & Vests': ['Corset', 'Vest', 'Waistcoat']
   };
 
   const seasonOptions = ['Spring', 'Summer', 'Fall', 'Winter'];
