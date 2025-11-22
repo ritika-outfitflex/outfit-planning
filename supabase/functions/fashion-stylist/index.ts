@@ -187,15 +187,20 @@ Output JSON format:
     }
 
     const data = await response.json();
-    const aiResponse = data.choices[0].message.content;
+    let aiResponse = data.choices[0].message.content;
+
+    // Strip markdown code blocks if present
+    if (aiResponse.includes('```')) {
+      aiResponse = aiResponse.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+    }
 
     let suggestions;
     try {
-      suggestions = JSON.parse(aiResponse);
+      suggestions = JSON.parse(aiResponse.trim());
     } catch (parseError) {
       console.error('Failed to parse AI response:', parseError);
       console.log('Raw AI response:', aiResponse);
-      return new Response(JSON.stringify({ error: 'Invalid AI response format' }), {
+      return new Response(JSON.stringify({ error: 'Failed to generate outfit suggestions. Please try again.' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
