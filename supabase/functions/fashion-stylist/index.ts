@@ -50,6 +50,29 @@ serve(async (req) => {
       });
     }
 
+    // Fetch disliked combinations to avoid
+    const { data: dislikedFeedback } = await supabase
+      .from('outfit_feedback')
+      .select('suggestion_data')
+      .eq('user_id', user_id)
+      .eq('feedback_type', 'dislike')
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (error) {
+      console.error('Database error:', error);
+      return new Response(JSON.stringify({ error: 'Failed to fetch wardrobe items' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!items || items.length === 0) {
+      return new Response(JSON.stringify({ outfits: [] }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Prepare wardrobe data for AI with pattern and color info
     const wardrobeData = items.map(item => ({
       name: item.name,
@@ -65,6 +88,19 @@ serve(async (req) => {
       occasions: item.occasions || [],
       notes: item.notes
     }));
+
+    // Extract disliked patterns
+    const dislikedPatterns = dislikedFeedback?.map(fb => {
+      const data = fb.suggestion_data as any;
+      return {
+        items: data.items?.map((i: any) => i.name || i) || [],
+        reasoning: data.reasoning || ''
+      };
+    }) || [];
+
+    const dislikedInfo = dislikedPatterns.length > 0 
+      ? `\n\nIMPORTANT - User has disliked these combinations. AVOID similar patterns:\n${JSON.stringify(dislikedPatterns, null, 2)}\n\nDo NOT suggest outfits with similar item combinations or color/pattern pairings.`
+      : '';
 
     const prompt = `You are a professional fashion stylist for the OutfitFlex app with expertise in color theory and pattern mixing.
 
@@ -101,6 +137,7 @@ PATTERN-SPECIFIC PAIRING:
 - Geometric items: pair with solid colors
 - Plaid/Checkered: pair with solid colors only
 - Animal print: treat as neutral, pair with solid colors
+${dislikedInfo}
 
 Filters requested:
 - Occasion: ${filters.occasion || 'any'}

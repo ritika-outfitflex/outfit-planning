@@ -166,6 +166,33 @@ export type Database = {
           },
         ]
       }
+      outfit_feedback: {
+        Row: {
+          created_at: string
+          dislike_reason: Json | null
+          feedback_type: string
+          id: string
+          suggestion_data: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dislike_reason?: Json | null
+          feedback_type: string
+          id?: string
+          suggestion_data: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dislike_reason?: Json | null
+          feedback_type?: string
+          id?: string
+          suggestion_data?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
       outfit_items: {
         Row: {
           clothing_item_id: string

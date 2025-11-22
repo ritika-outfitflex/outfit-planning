@@ -82,6 +82,34 @@ export const useOutfitSuggestions = () => {
     }
   };
 
+  const dislikeSuggestion = async (suggestion: OutfitSuggestion) => {
+    if (!user) return;
+
+    try {
+      // Store the disliked combination
+      const { error } = await supabase
+        .from('outfit_feedback')
+        .insert([{
+          user_id: user.id,
+          suggestion_data: suggestion as any,
+          feedback_type: 'dislike',
+          dislike_reason: {
+            items: suggestion.items.map(i => i.name),
+            occasion: suggestion.occasion,
+            colors: suggestion.items.map(i => i.name)
+          } as any
+        }]);
+
+      if (error) throw error;
+
+      // Remove from current suggestions
+      setSuggestions(prev => prev.filter(s => s.title !== suggestion.title));
+    } catch (error) {
+      console.error('Error recording dislike:', error);
+      throw error;
+    }
+  };
+
 
 
   const saveOutfit = async (suggestion: OutfitSuggestion) => {
@@ -141,6 +169,7 @@ export const useOutfitSuggestions = () => {
     suggestions,
     loading,
     generateSuggestions,
-    saveOutfit
+    saveOutfit,
+    dislikeSuggestion
   };
 };
