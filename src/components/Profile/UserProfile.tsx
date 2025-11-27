@@ -167,10 +167,20 @@ const UserProfile: React.FC = () => {
             <div className="flex-1">
               <h2 className="font-bold text-xl text-foreground">{getDisplayName()}</h2>
               <p className="text-sm text-muted-foreground">{user?.email}</p>
-              <div className="mt-2">
+              <div className="mt-2 flex flex-wrap gap-2">
                 <span className="text-xs bg-gradient-primary text-white px-2 py-1 rounded-full">
                   Style Enthusiast
                 </span>
+                {profile?.age_group && (
+                  <span className="text-xs bg-secondary/50 text-secondary-foreground px-2 py-1 rounded-full">
+                    {profile.age_group.replace('_', ' ')}
+                  </span>
+                )}
+                {profile?.region && (
+                  <span className="text-xs bg-accent/50 text-accent-foreground px-2 py-1 rounded-full">
+                    {profile.region}
+                  </span>
+                )}
               </div>
             </div>
           </CardContent>

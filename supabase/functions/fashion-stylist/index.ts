@@ -30,6 +30,13 @@ serve(async (req) => {
     // Initialize Supabase client
     const supabase = createClient(supabaseUrl!, supabaseServiceKey!);
 
+    // Fetch user's profile for demographic information
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('age_group, gender, region')
+      .eq('id', user_id)
+      .single();
+
     // Fetch user's clothing items
     const { data: items, error } = await supabase
       .from('clothing_items')
@@ -102,6 +109,26 @@ serve(async (req) => {
       ? `\n\nIMPORTANT - User has disliked these combinations. AVOID similar patterns:\n${JSON.stringify(dislikedPatterns, null, 2)}\n\nDo NOT suggest outfits with similar item combinations or color/pattern pairings.`
       : '';
 
+    // Prepare demographic information for personalization
+    const demographicInfo = profile ? `
+
+USER DEMOGRAPHICS (Consider for culturally appropriate and age-appropriate styling):
+- Age Group: ${profile.age_group || 'not specified'}
+- Gender: ${profile.gender || 'not specified'}
+- Region: ${profile.region || 'not specified'}
+
+DEMOGRAPHIC STYLING GUIDELINES:
+${profile.age_group === 'child' ? '- Focus on comfortable, playful, age-appropriate styles\n- Prioritize comfort and ease of movement\n- Avoid overly mature or formal looks unless specifically requested' : ''}
+${profile.age_group === 'teen' ? '- Balance trendy and age-appropriate styles\n- Consider school/social occasion appropriateness\n- Include casual and sporty options' : ''}
+${profile.age_group === 'senior' ? '- Prioritize comfort and elegance\n- Consider ease of wear and practicality\n- Classic, timeless combinations work best' : ''}
+${profile.gender === 'male' ? '- Focus on menswear items (pants, shirts, jackets, etc.)\n- Consider traditional male fashion aesthetics\n- Suggest masculine accessories' : ''}
+${profile.gender === 'female' ? '- Consider both feminine and androgynous options\n- Include dresses, skirts as viable options\n- Suggest feminine accessories when appropriate' : ''}
+${profile.gender === 'non_binary' ? '- Focus on gender-neutral styling\n- Mix traditionally masculine and feminine elements\n- Prioritize personal expression and comfort' : ''}
+${profile.region?.toLowerCase().includes('india') ? '- Include traditional Indian wear when available (kurti, salwar, saree, etc.)\n- Consider cultural occasions (festivals, traditional events)\n- Mix traditional and western styles when appropriate' : ''}
+${profile.region?.toLowerCase().includes('middle east') || profile.region?.toLowerCase().includes('arab') ? '- Consider modest fashion preferences\n- Include traditional garments when available\n- Respect cultural modesty standards' : ''}
+${profile.region?.toLowerCase().includes('asia') ? '- Consider regional fashion trends\n- Include traditional garments if available\n- Balance modern and traditional aesthetics' : ''}
+` : '';
+
     const prompt = `You are a professional fashion stylist for the OutfitFlex app with expertise in color theory and pattern mixing.
 
 CRITICAL OUTFIT CONSTRUCTION RULES (MUST FOLLOW):
@@ -162,6 +189,7 @@ PATTERN-SPECIFIC PAIRING:
 - Plaid/Checkered: pair with solid colors only
 - Animal print: treat as neutral, pair with solid colors
 ${dislikedInfo}
+${demographicInfo}
 
 Filters requested:
 - Occasion: ${filters.occasion || 'any'}
