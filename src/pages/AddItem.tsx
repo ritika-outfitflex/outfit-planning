@@ -62,18 +62,19 @@ const AddItemPage = ({ editItem, onSave }: AddItemPageProps) => {
 
   const categories = [
     'Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Shoes', 
-    'Accessories', 'Sleepwear', 'Corsets & Vests'
+    'Accessories', 'Sleepwear', 'Corsets & Vests', 'Traditional/Cultural'
   ];
 
   const subcategories = {
-    'Tops': ['T-shirt', 'Shirt', 'Blouse', 'Sweater', 'Tank Top', 'Hoodie'],
-    'Bottoms': ['Jeans', 'Pants', 'Shorts', 'Skirt', 'Leggings'],
-    'Dresses': ['Casual', 'Formal', 'Maxi', 'Mini', 'Midi'],
-    'Outerwear': ['Jacket', 'Coat', 'Blazer', 'Cardigan'],
-    'Shoes': ['Sneakers', 'Boots', 'Heels', 'Flats', 'Sandals'],
-    'Accessories': ['Bag', 'Hat', 'Scarf', 'Belt', 'Jewelry'],
-    'Sleepwear': ['Pajamas', 'Nightgown', 'Robe'],
-    'Corsets & Vests': ['Corset', 'Vest', 'Waistcoat']
+    'Tops': ['T-shirt', 'Shirt', 'Blouse', 'Sweater', 'Tank Top', 'Hoodie', 'Crop Top', 'Tunic'],
+    'Bottoms': ['Jeans', 'Pants', 'Shorts', 'Skirt', 'Leggings', 'Palazzo', 'Dhoti'],
+    'Dresses': ['Casual', 'Formal', 'Maxi', 'Mini', 'Midi', 'Gown', 'Sundress'],
+    'Outerwear': ['Jacket', 'Coat', 'Blazer', 'Cardigan', 'Shawl', 'Cape'],
+    'Shoes': ['Sneakers', 'Boots', 'Heels', 'Flats', 'Sandals', 'Loafers', 'Mojari'],
+    'Accessories': ['Bag', 'Hat', 'Scarf', 'Belt', 'Jewelry', 'Watch', 'Sunglasses', 'Dupatta'],
+    'Sleepwear': ['Pajamas', 'Nightgown', 'Robe', 'Loungewear'],
+    'Corsets & Vests': ['Corset', 'Vest', 'Waistcoat'],
+    'Traditional/Cultural': ['Kurti', 'Salwar Suit', 'Saree', 'Lehenga', 'Anarkali', 'Churidar', 'Sherwani', 'Kurta', 'Pathani Suit', 'Kimono', 'Hanbok', 'Kaftan', 'Abaya', 'Thobe']
   };
 
   const seasonOptions = ['Spring', 'Summer', 'Fall', 'Winter'];
