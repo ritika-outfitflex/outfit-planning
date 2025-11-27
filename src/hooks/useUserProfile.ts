@@ -8,6 +8,9 @@ interface UserProfile {
   full_name: string | null;
   email: string | null;
   avatar_url: string | null;
+  age_group: string | null;
+  gender: string | null;
+  region: string | null;
 }
 
 export const useUserProfile = () => {
@@ -45,7 +48,10 @@ export const useUserProfile = () => {
           id: user?.id,
           email: user?.email,
           full_name: null,
-          avatar_url: null
+          avatar_url: null,
+          age_group: null,
+          gender: null,
+          region: null
         };
         
         const { error: insertError } = await supabase

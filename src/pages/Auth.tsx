@@ -15,6 +15,9 @@ const AuthPage = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [ageGroup, setAgeGroup] = useState('');
+  const [gender, setGender] = useState('');
+  const [region, setRegion] = useState('');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp } = useAuth();
   const navigate = useNavigate();
@@ -46,7 +49,7 @@ const AuthPage = () => {
     try {
       const { error } = isLogin 
         ? await signIn(email, password)
-        : await signUp(email, password, fullName);
+        : await signUp(email, password, fullName, ageGroup, gender, region);
 
       if (error) {
         toast({
@@ -120,16 +123,56 @@ const AuthPage = () => {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-4">
               {!isLogin && (
-                <div className="relative">
-                  <Input
-                    type="text"
-                    placeholder="Full Name"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required
-                    className="h-12 pl-4 border-outfit-primary/20 focus:border-outfit-primary bg-white/50 backdrop-blur-sm"
-                  />
-                </div>
+                <>
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      placeholder="Full Name"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                      className="h-12 pl-4 border-outfit-primary/20 focus:border-outfit-primary bg-white/50 backdrop-blur-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="relative">
+                      <select
+                        value={ageGroup}
+                        onChange={(e) => setAgeGroup(e.target.value)}
+                        className="h-12 w-full pl-4 pr-8 rounded-md border border-outfit-primary/20 focus:border-outfit-primary bg-white/50 backdrop-blur-sm text-sm appearance-none cursor-pointer"
+                      >
+                        <option value="">Age Group (Optional)</option>
+                        <option value="child">Child (5-12)</option>
+                        <option value="teen">Teen (13-19)</option>
+                        <option value="young_adult">Young Adult (20-35)</option>
+                        <option value="adult">Adult (36-55)</option>
+                        <option value="senior">Senior (55+)</option>
+                      </select>
+                    </div>
+                    <div className="relative">
+                      <select
+                        value={gender}
+                        onChange={(e) => setGender(e.target.value)}
+                        className="h-12 w-full pl-4 pr-8 rounded-md border border-outfit-primary/20 focus:border-outfit-primary bg-white/50 backdrop-blur-sm text-sm appearance-none cursor-pointer"
+                      >
+                        <option value="">Gender (Optional)</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="non_binary">Non-Binary</option>
+                        <option value="prefer_not_to_say">Prefer not to say</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      type="text"
+                      placeholder="Region (Optional, e.g., India, USA, UK)"
+                      value={region}
+                      onChange={(e) => setRegion(e.target.value)}
+                      className="h-12 pl-4 border-outfit-primary/20 focus:border-outfit-primary bg-white/50 backdrop-blur-sm"
+                    />
+                  </div>
+                </>
               )}
               <div className="relative">
                 <Input
