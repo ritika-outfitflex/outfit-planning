@@ -2,12 +2,10 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Sparkles, Heart } from 'lucide-react';
-import loginBackground from '@/assets/login-background.jpg';
+import { Loader2, User, Mail, Lock } from 'lucide-react';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -83,157 +81,140 @@ const AuthPage = () => {
   };
 
   return (
-    <div 
-      className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
-      style={{
-        backgroundImage: `url(${loginBackground})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      }}
-    >
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-outfit-primary/20 via-transparent to-outfit-secondary/20 backdrop-blur-[2px]" />
-      
-      {/* Floating Elements */}
-      <div className="absolute top-20 left-10 opacity-30">
-        <Heart className="h-8 w-8 text-outfit-primary animate-pulse" />
-      </div>
-      <div className="absolute top-32 right-16 opacity-20">
-        <Sparkles className="h-6 w-6 text-outfit-secondary animate-bounce" />
-      </div>
-      <div className="absolute bottom-32 left-20 opacity-25">
-        <Sparkles className="h-4 w-4 text-outfit-accent animate-pulse" />
-      </div>
-      
-      <Card className="w-full max-w-md relative z-10 border-0 shadow-glow backdrop-blur-md bg-white/90">
-        <CardHeader className="text-center pb-6">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Sparkles className="h-6 w-6 text-outfit-primary" />
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-outfit-primary to-outfit-secondary bg-clip-text text-transparent">
-              OutfitFlex
-            </CardTitle>
-            <Heart className="h-6 w-6 text-outfit-accent" />
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-[hsl(330,70%,65%)] via-[hsl(315,75%,70%)] to-[hsl(280,70%,75%)]">
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-white mb-2">OutfitFlex</h1>
+        </div>
+
+        {/* Auth Card */}
+        <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+              {isLogin ? 'Welcome Back' : 'Create Your Profile'}
+            </h2>
+            <p className="text-gray-600">
+              {isLogin ? 'Sign in to continue your style journey' : 'Unlock your ultimate style companion'}
+            </p>
           </div>
-          <CardDescription className="text-outfit-dark/70">
-            {isLogin ? 'Welcome back, fashionista! ✨' : 'Join our stylish community 💖'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-4">
-              {!isLogin && (
-                <>
-                  <div className="relative">
-                    <Input
-                      type="text"
-                      placeholder="Full Name"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      required
-                      className="h-12 pl-4 border-outfit-primary/20 focus:border-outfit-primary bg-white/50 backdrop-blur-sm"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="relative">
-                      <select
-                        value={ageGroup}
-                        onChange={(e) => setAgeGroup(e.target.value)}
-                        className="h-12 w-full pl-4 pr-8 rounded-md border border-outfit-primary/20 focus:border-outfit-primary bg-white/50 backdrop-blur-sm text-sm appearance-none cursor-pointer"
-                      >
-                        <option value="">Age Group (Optional)</option>
-                        <option value="child">Child (5-12)</option>
-                        <option value="teen">Teen (13-19)</option>
-                        <option value="young_adult">Young Adult (20-35)</option>
-                        <option value="adult">Adult (36-55)</option>
-                        <option value="senior">Senior (55+)</option>
-                      </select>
-                    </div>
-                    <div className="relative">
-                      <select
-                        value={gender}
-                        onChange={(e) => setGender(e.target.value)}
-                        className="h-12 w-full pl-4 pr-8 rounded-md border border-outfit-primary/20 focus:border-outfit-primary bg-white/50 backdrop-blur-sm text-sm appearance-none cursor-pointer"
-                      >
-                        <option value="">Gender (Optional)</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="non_binary">Non-Binary</option>
-                        <option value="prefer_not_to_say">Prefer not to say</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="relative">
-                    <Input
-                      type="text"
-                      placeholder="Region (Optional, e.g., India, USA, UK)"
-                      value={region}
-                      onChange={(e) => setRegion(e.target.value)}
-                      className="h-12 pl-4 border-outfit-primary/20 focus:border-outfit-primary bg-white/50 backdrop-blur-sm"
-                    />
-                  </div>
-                </>
-              )}
-              <div className="relative">
-                <Input
-                  type="email"
-                  placeholder="Email Address"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="h-12 pl-4 border-outfit-primary/20 focus:border-outfit-primary bg-white/50 backdrop-blur-sm"
-                />
-              </div>
-              <div className="relative">
-                <Input
-                  type="password"
-                  placeholder={isLogin ? "Password" : "Create Password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  className="h-12 pl-4 border-outfit-primary/20 focus:border-outfit-primary bg-white/50 backdrop-blur-sm"
-                />
-              </div>
-              {!isLogin && (
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {!isLogin && (
+              <>
                 <div className="relative">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                   <Input
-                    type="password"
-                    placeholder="Confirm Password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    type="text"
+                    placeholder="Name"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
                     required
-                    minLength={6}
-                    className="h-12 pl-4 border-outfit-primary/20 focus:border-outfit-primary bg-white/50 backdrop-blur-sm"
+                    className="h-14 pl-12 pr-4 bg-white border-0 shadow-md rounded-2xl text-base placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-[hsl(315,70%,65%)]"
                   />
                 </div>
-              )}
+                <div className="grid grid-cols-2 gap-3">
+                  <select
+                    value={ageGroup}
+                    onChange={(e) => setAgeGroup(e.target.value)}
+                    className="h-14 pl-4 pr-8 bg-white border-0 shadow-md rounded-2xl text-base text-gray-700 appearance-none cursor-pointer focus:ring-2 focus:ring-[hsl(315,70%,65%)] focus:outline-none"
+                  >
+                    <option value="">Age Group</option>
+                    <option value="child">Child (5-12)</option>
+                    <option value="teen">Teen (13-19)</option>
+                    <option value="young_adult">Young Adult (20-35)</option>
+                    <option value="adult">Adult (36-55)</option>
+                    <option value="senior">Senior (55+)</option>
+                  </select>
+                  <select
+                    value={gender}
+                    onChange={(e) => setGender(e.target.value)}
+                    className="h-14 pl-4 pr-8 bg-white border-0 shadow-md rounded-2xl text-base text-gray-700 appearance-none cursor-pointer focus:ring-2 focus:ring-[hsl(315,70%,65%)] focus:outline-none"
+                  >
+                    <option value="">Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="non_binary">Non-Binary</option>
+                    <option value="prefer_not_to_say">Prefer not to say</option>
+                  </select>
+                </div>
+                <Input
+                  type="text"
+                  placeholder="Region (e.g., India, USA, UK)"
+                  value={region}
+                  onChange={(e) => setRegion(e.target.value)}
+                  className="h-14 px-4 bg-white border-0 shadow-md rounded-2xl text-base placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-[hsl(315,70%,65%)]"
+                />
+              </>
+            )}
+            
+            <div className="relative">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Input
+                type="email"
+                placeholder="Email Address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="h-14 pl-12 pr-4 bg-white border-0 shadow-md rounded-2xl text-base placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-[hsl(315,70%,65%)]"
+              />
             </div>
+            
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                className="h-14 pl-12 pr-4 bg-white border-0 shadow-md rounded-2xl text-base placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-[hsl(315,70%,65%)]"
+              />
+            </div>
+            
+            {!isLogin && (
+              <div className="relative">
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Input
+                  type="password"
+                  placeholder="Confirm Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  className="h-14 pl-12 pr-4 bg-white border-0 shadow-md rounded-2xl text-base placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-[hsl(315,70%,65%)]"
+                />
+              </div>
+            )}
+
             <Button 
               type="submit" 
-              className="w-full h-12 text-base font-medium bg-gradient-to-r from-outfit-primary to-outfit-secondary hover:from-outfit-primary/90 hover:to-outfit-secondary/90 transition-all duration-300 shadow-glow" 
+              className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-[hsl(330,70%,60%)] to-[hsl(260,70%,65%)] hover:from-[hsl(330,70%,55%)] hover:to-[hsl(260,70%,60%)] text-white rounded-2xl shadow-lg transition-all duration-300 mt-6" 
               disabled={loading}
             >
-              {loading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-              <Sparkles className="mr-2 h-5 w-5" />
-              {isLogin ? 'Sign In & Style' : 'Join the Fashion'}
+              {loading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                isLogin ? 'Log In' : 'Get Started'
+              )}
             </Button>
           </form>
           
-          <div className="text-center">
-            <Button
-              variant="ghost"
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-outfit-dark/70 hover:text-outfit-primary hover:bg-outfit-primary/5"
-            >
-              {isLogin 
-                ? "New here? Create your style profile ✨" 
-                : "Already have an account? Sign in 💫"
-              }
-            </Button>
+          <div className="text-center mt-6">
+            <p className="text-gray-700">
+              {isLogin ? "Already have on account? " : "Already have an account? "}
+              <button
+                type="button"
+                onClick={() => setIsLogin(!isLogin)}
+                className="text-[hsl(260,70%,55%)] font-semibold hover:underline"
+              >
+                {isLogin ? 'Sign Up' : 'Log In'}
+              </button>
+            </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };
